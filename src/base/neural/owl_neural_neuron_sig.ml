@@ -1299,22 +1299,22 @@ module Padding3D : sig  end
 module Lambda : sig
 
   type neuron_typ = {
-    mutable lambda    : t -> t;
+    mutable lambda    : t array -> t;
     mutable in_shape  : int array;
     mutable out_shape : int array;
   }
   (** Neuron type definition. *)
 
-  val create : (t -> t) -> neuron_typ
+  val create : int array -> (t array -> t) -> neuron_typ
   (** Create the neuron. *)
 
-  val connect : int array -> neuron_typ -> unit
+  val connect : int array array -> neuron_typ -> unit
   (** Connect this neuron to others in a neural network. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
-  val run : t -> neuron_typ -> t
+  val run : t array -> neuron_typ -> t
   (** Execute the computation in this neuron. *)
 
   val to_string : neuron_typ -> string

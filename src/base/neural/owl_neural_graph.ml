@@ -476,11 +476,11 @@ module Make
     add_node nn [|input_node|] n
 
 
-  let lambda ?name ?act_typ lambda input_node =
-    let neuron = Lambda (Lambda.create lambda) in
-    let nn = get_network input_node in
+  let lambda ?name ?act_typ outputs lambda input_node =
+    let neuron = Lambda (Lambda.create outputs lambda) in
+    let nn = get_network input_node.(0) in
     let n = make_node ?name [||] [||] neuron None nn in
-    add_node ?act_typ nn [|input_node|] n
+    add_node ?act_typ nn input_node n
 
 
   let add ?name ?act_typ input_node =

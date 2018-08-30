@@ -2153,30 +2153,29 @@ module Make
   module Lambda = struct
 
     type neuron_typ = {
-      mutable lambda    : t -> t;
+      mutable lambda    : t array -> t;
       mutable in_shape  : int array;
       mutable out_shape : int array;
     }
 
-    let create lambda = {
+    let create o lambda = {
       lambda;
       in_shape  = [||];
-      out_shape = [||];
+      out_shape = o;
     }
 
     let connect out_shape l =
-      l.in_shape <- Array.copy out_shape;
-      l.out_shape <- Array.copy out_shape
+      l.in_shape <- Array.copy out_shape.(0)
 
-    let copy l = create l.lambda
+    let copy l = create l.out_shape l.lambda
 
     let run x l = l.lambda x
 
     let to_string l =
       let in_str = Owl_utils_array.to_string string_of_int l.in_shape in
       let out_str = Owl_utils_array.to_string string_of_int l.out_shape in
-      Printf.sprintf "    Lambda       : in:[*,%s] out:[*,%s]\n" in_str out_str ^
-      Printf.sprintf "    customised f : t -> t\n" ^
+      Printf.sprintf "    Lambda       : in:[[*,%s],...] out:[*,%s]\n" in_str out_str ^
+      Printf.sprintf "    customised f : t array -> t\n" ^
       ""
 
     let to_name () = "lambda"
@@ -2976,7 +2975,7 @@ module Make
     | Dropout l         -> Dropout.connect out_shapes.(0) l
     | Reshape l         -> Reshape.connect out_shapes.(0) l
     | Flatten l         -> Flatten.connect out_shapes.(0) l
-    | Lambda l          -> Lambda.connect out_shapes.(0) l
+    | Lambda l          -> Lambda.connect out_shapes l
     | Activation l      -> Activation.connect out_shapes.(0) l
     | GaussianNoise l   -> GaussianNoise.connect out_shapes.(0) l
     | GaussianDropout l -> GaussianDropout.connect out_shapes.(0) l
@@ -3209,7 +3208,7 @@ module Make
     | Dropout l         -> Dropout.run a.(0) l
     | Reshape l         -> Reshape.run a.(0) l
     | Flatten l         -> Flatten.run a.(0) l
-    | Lambda l          -> Lambda.run a.(0) l
+    | Lambda l          -> Lambda.run a l
     | Activation l      -> Activation.run a.(0) l
     | GaussianNoise l   -> GaussianNoise.run a.(0) l
     | GaussianDropout l -> GaussianDropout.run a.(0) l

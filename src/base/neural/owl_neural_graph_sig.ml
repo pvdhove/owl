@@ -378,12 +378,13 @@ Arguments:
 ``flatten node`` flattens the input. Does not affect the batch size.
   *)
 
-  val lambda : ?name:string -> ?act_typ:Activation.typ -> (t -> t) -> node -> node
+  val lambda : ?name:string -> ?act_typ:Activation.typ -> int array -> (t array -> t) -> node array -> node
   (**
-``lambda func node`` wraps arbitrary expression as a Node object.
+``lambda target_shape func node`` wraps arbitrary expression as a Node object.
 
 Arguments:
-  * ``func``: The function to be evaluated. Takes input tensor as first argument.
+  * ``target_shape``: the shape of the tensor returned by ``func``.
+  * ``func``: The function to be evaluated. Takes input tensor array as first argument.
   *)
 
   val add : ?name:string -> ?act_typ:Activation.typ -> node array -> node

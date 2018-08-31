@@ -2139,7 +2139,7 @@ module Make
 
   (* TODO: definition of Padding2D neuron *)
   module Padding2D = struct
-
+        
   end
 
 
@@ -2151,6 +2151,41 @@ module Make
 
   (* definition of Lambda neuron *)
   module Lambda = struct
+
+    type neuron_typ = {
+      mutable lambda    : t -> t;
+      mutable in_shape  : int array;
+      mutable out_shape : int array;
+    }
+
+    let create lambda = {
+      lambda;
+      in_shape  = [||];
+      out_shape = [||];
+    }
+
+    let connect out_shape l =
+      l.in_shape <- Array.copy out_shape;
+      l.out_shape <- Array.copy out_shape
+
+    let copy l = create l.lambda
+
+    let run x l = l.lambda x
+
+    let to_string l =
+      let in_str = Owl_utils_array.to_string string_of_int l.in_shape in
+      let out_str = Owl_utils_array.to_string string_of_int l.out_shape in
+      Printf.sprintf "    Lambda       : in:[*,%s] out:[*,%s]\n" in_str out_str ^
+      Printf.sprintf "    customised f : t -> t\n" ^
+      ""
+
+    let to_name () = "lambda"
+
+  end
+
+
+  (* definition of LambdaArray neuron *)
+  module LambdaArray = struct
 
     type neuron_typ = {
       mutable lambda    : t array -> t;
@@ -2174,11 +2209,11 @@ module Make
     let to_string l =
       let in_str = Owl_utils_array.to_string string_of_int l.in_shape in
       let out_str = Owl_utils_array.to_string string_of_int l.out_shape in
-      Printf.sprintf "    Lambda       : in:[[*,%s],...] out:[*,%s]\n" in_str out_str ^
+      Printf.sprintf "    LambdaArray  : in:[[*,%s],...] out:[*,%s]\n" in_str out_str ^
       Printf.sprintf "    customised f : t array -> t\n" ^
       ""
 
-    let to_name () = "lambda"
+    let to_name () = "lambda_array"
 
   end
 
@@ -2884,6 +2919,7 @@ module Make
     | Reshape         of Reshape.neuron_typ
     | Flatten         of Flatten.neuron_typ
     | Lambda          of Lambda.neuron_typ
+    | LambdaArray     of LambdaArray.neuron_typ
     | Activation      of Activation.neuron_typ
     | GaussianNoise   of GaussianNoise.neuron_typ
     | GaussianDropout of GaussianDropout.neuron_typ
@@ -2927,6 +2963,7 @@ module Make
     | Reshape l         -> Reshape.(l.in_shape, l.out_shape)
     | Flatten l         -> Flatten.(l.in_shape, l.out_shape)
     | Lambda l          -> Lambda.(l.in_shape, l.out_shape)
+    | LambdaArray l     -> LambdaArray.(l.in_shape, l.out_shape)
     | Activation l      -> Activation.(l.in_shape, l.out_shape)
     | GaussianNoise l   -> GaussianNoise.(l.in_shape, l.out_shape)
     | GaussianDropout l -> GaussianDropout.(l.in_shape, l.out_shape)
@@ -2975,7 +3012,8 @@ module Make
     | Dropout l         -> Dropout.connect out_shapes.(0) l
     | Reshape l         -> Reshape.connect out_shapes.(0) l
     | Flatten l         -> Flatten.connect out_shapes.(0) l
-    | Lambda l          -> Lambda.connect out_shapes l
+    | Lambda l          -> Lambda.connect out_shapes.(0) l
+    | LambdaArray l     -> LambdaArray.connect out_shapes l
     | Activation l      -> Activation.connect out_shapes.(0) l
     | GaussianNoise l   -> GaussianNoise.connect out_shapes.(0) l
     | GaussianDropout l -> GaussianDropout.connect out_shapes.(0) l
@@ -3166,6 +3204,7 @@ module Make
     | Reshape l         -> Reshape Reshape.(copy l)
     | Flatten l         -> Flatten Flatten.(copy l)
     | Lambda l          -> Lambda Lambda.(copy l)
+    | LambdaArray l     -> LambdaArray LambdaArray.(copy l)
     | Activation l      -> Activation Activation.(copy l)
     | GaussianNoise l   -> GaussianNoise GaussianNoise.(copy l)
     | GaussianDropout l -> GaussianDropout GaussianDropout.(copy l)
@@ -3208,7 +3247,8 @@ module Make
     | Dropout l         -> Dropout.run a.(0) l
     | Reshape l         -> Reshape.run a.(0) l
     | Flatten l         -> Flatten.run a.(0) l
-    | Lambda l          -> Lambda.run a l
+    | Lambda l          -> Lambda.run a.(0) l
+    | LambdaArray l     -> LambdaArray.run a l
     | Activation l      -> Activation.run a.(0) l
     | GaussianNoise l   -> GaussianNoise.run a.(0) l
     | GaussianDropout l -> GaussianDropout.run a.(0) l
@@ -3252,6 +3292,7 @@ module Make
     | Reshape l         -> Reshape.to_string l
     | Flatten l         -> Flatten.to_string l
     | Lambda l          -> Lambda.to_string l
+    | LambdaArray l     -> LambdaArray.to_string l
     | Activation l      -> Activation.to_string l
     | GaussianNoise l   -> GaussianNoise.to_string l
     | GaussianDropout l -> GaussianDropout.to_string l
@@ -3295,6 +3336,7 @@ module Make
     | Reshape _         -> Reshape.to_name ()
     | Flatten _         -> Flatten.to_name ()
     | Lambda _          -> Lambda.to_name ()
+    | LambdaArray _     -> LambdaArray.to_name ()
     | Activation _      -> Activation.to_name ()
     | GaussianNoise _   -> GaussianNoise.to_name ()
     | GaussianDropout _ -> GaussianDropout.to_name ()

@@ -1299,6 +1299,38 @@ module Padding3D : sig  end
 module Lambda : sig
 
   type neuron_typ = {
+    mutable lambda    : t -> t;
+    mutable in_shape  : int array;
+    mutable out_shape : int array;
+  }
+  (** Neuron type definition. *)
+
+  val create : (t -> t) -> neuron_typ
+  (** Create the neuron. *)
+
+  val connect : int array -> neuron_typ -> unit
+  (** Connect this neuron to others in a neural network. *)
+
+  val copy : neuron_typ -> neuron_typ
+  (** Make a deep copy of the neuron and its parameters. *)
+
+  val run : t -> neuron_typ -> t
+  (** Execute the computation in this neuron. *)
+
+  val to_string : neuron_typ -> string
+  (** Convert the neuron to its string representation. The string is often a summary of the parameters defined in the neuron. *)
+
+  val to_name : unit -> string
+  (** Return the name of the neuron. *)
+
+end
+
+
+  (** {6 LambdaArray neuron} *)
+
+module LambdaArray : sig
+
+  type neuron_typ = {
     mutable lambda    : t array -> t;
     mutable in_shape  : int array;
     mutable out_shape : int array;
@@ -1854,6 +1886,7 @@ type neuron =
   | Reshape         of Reshape.neuron_typ
   | Flatten         of Flatten.neuron_typ
   | Lambda          of Lambda.neuron_typ
+  | LambdaArray     of LambdaArray.neuron_typ
   | Activation      of Activation.neuron_typ
   | GaussianNoise   of GaussianNoise.neuron_typ
   | GaussianDropout of GaussianDropout.neuron_typ

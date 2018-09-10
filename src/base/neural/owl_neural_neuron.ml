@@ -2236,7 +2236,12 @@ module Make
 
     let copy l = create l.out_shape l.lambda
 
-    let run x l = l.lambda x
+    let run x l =
+      let y = l.lambda x in
+      (* check that the output shape is indeed out_shape *)
+      let s = shape y in
+      assert (Array.sub s 1 ((Array.length s) - 1) = l.out_shape);
+      y
 
     let to_string l =
       let in_str = Owl_utils_array.to_string string_of_int l.in_shape in

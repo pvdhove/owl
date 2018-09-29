@@ -185,11 +185,11 @@ module Make
           Hashtbl.add refs (id x) (Array.length (children x))
         );
         if can_overwrite_parent x then (
-          Array.iter update_parent (parents x);
+          Array.iter update_parent (Owl_utils.Array.unique (parents x));
           allocate x
         ) else (
           allocate x;
-          Array.iter update_parent (parents x)
+          Array.iter update_parent (Owl_utils.Array.unique (parents x))
         )
       )
     in

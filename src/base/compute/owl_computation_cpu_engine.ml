@@ -25,8 +25,8 @@ module Make_Nested
 
   (* core interface *)
 
-  let eval_gen outputs =
-    let topo = Owl_graph.topo_sort outputs in
+  let eval_gen nodes =
+    let topo = Owl_graph.topo_sort nodes in
     CG_Init._init_terms topo;
     Array.iter CG_Eval._eval_term topo
 

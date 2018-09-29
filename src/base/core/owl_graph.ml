@@ -124,7 +124,7 @@ let replace_parent parent_0 parent_1 =
 
 
 (* depth-first search from [x]; [f : node -> unit] is applied to each node;
-  [next node -> node array] returns the next set of nodes to iterate;
+   [next node -> node array] returns the next set of nodes to iterate;
 *)
 let dfs_iter f x next =
   let h = Hashtbl.create 512 in
@@ -140,8 +140,22 @@ let dfs_iter f x next =
   _dfs_iter x
 
 
-(* TODO: BFS iterator *)
-let bfs_iter _f _next _x = failwith "owl_graph:bfs_iter"
+(* breadth-first search from [x]; [f : node -> unit] is applied to each node;
+   [next node -> node array] returns the next set of nodes to iterate;
+*)
+let bfs_iter f x next =
+  let h = Hashtbl.create 512 in
+  let q = Queue.create () in
+  Array.iter (fun u -> Queue.push u q) x;
+  Array.iter (fun u -> Hashtbl.add h u.id None) x;
+  while not (Queue.is_empty q) do
+    let u = Queue.pop q in
+    f u;
+    Array.iter (fun v -> if not (Hashtbl.mem h v.id) then (
+                           Hashtbl.add h v.id None;
+                           Queue.push v q
+                         )) (next u);
+  done
 
 
 let iter_ancestors ?(order=DFS) f x =
@@ -279,16 +293,16 @@ let to_string from_root x =
 let topo_sort nodes =
   let h = Hashtbl.create 512 in
   let s = Owl_utils_stack.make () in
-  let rec _bfs_iter nodes =
+  let rec _dfs_iter nodes =
     Array.iter (fun u ->
-      _bfs_iter (parents u);
-      if Hashtbl.mem h u.id = false then (
+      if not (Hashtbl.mem h u.id) then (
         Hashtbl.add h u.id u;
+        _dfs_iter (parents u);
         Owl_utils_stack.push s u
       )
     ) nodes
   in
-  _bfs_iter nodes;
+  _dfs_iter nodes;
   Owl_utils_stack.to_array s
 
 

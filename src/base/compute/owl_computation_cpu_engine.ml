@@ -18,16 +18,17 @@ module Make_Nested
 
   (* module aliases *)
 
-  module CG_Init = Owl_computation_cpu_init.Make (Graph)
+  module CG_Init = Owl_computation_cpu_init2.Make (Graph)
 
   module CG_Eval = Owl_computation_cpu_eval.Make (Graph)
 
 
   (* core interface *)
 
-  let eval_gen nodes =
-    Array.iter CG_Init._init_term nodes;
-    Array.iter CG_Eval._eval_term nodes
+  let eval_gen outputs =
+    let topo = Owl_graph.topo_sort outputs in
+    CG_Init._init_terms topo;
+    Array.iter CG_Eval._eval_term topo
 
 
   let eval_elt xs = Array.map elt_to_node xs |> eval_gen

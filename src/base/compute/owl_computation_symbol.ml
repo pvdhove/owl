@@ -411,7 +411,16 @@ module Make
   let validate x = (attr x).state <- Valid
 
 
-  let invalidate x = (attr x).state <- Invalid
+  let invalidate x =
+    (* if (get_operator x) = ScalarMul && (attr x).state = Valid then (
+     *   Owl_log.info "invalidate %s" (node_to_str x);
+     *   let y = (attr x).value in
+     *   if Array.length y > 0 then
+     *     A.print ~max_col:10 (value_to_arr y.(0))
+     *   else
+     *     Printf.printf "NOT INITIALISED\n"
+     * ); *)
+    (attr x).state <- Invalid
 
 
   let invalidate_graph x = iter_descendants invalidate [|x|]

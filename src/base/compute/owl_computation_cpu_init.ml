@@ -20,9 +20,10 @@ module Make
   (* utility functions *)
 
   let is_initialised x =
-    let x_val = get_value x in
     if is_elt x then false
-    else Array.length x_val > 0
+    else
+      let x_val = get_value x in
+      Array.length x_val > 0
 
 
   let make_value_from src dst =
@@ -36,6 +37,7 @@ module Make
         set_vnode dst [| src |]
       )
     | None     -> (
+      (* Owl_log.info "new memo for: %s" (node_to_str dst); *)
         (* allocate new memory for dst node *)
         let dst_val = arr_to_value (A.zeros dst_shp) in
         set_value dst [| dst_val |];
@@ -114,6 +116,7 @@ module Make
     Owl_log.debug "init %s ..." (node_to_str x);
 
     if is_initialised x = false then
+      (* let () = Owl_log.info "hein?? %s" (node_to_str x) in *)
       try
         match (get_operator x) with
         | Noop                                           -> _init_05 x

@@ -26,9 +26,10 @@ module Make_Nested
   (* core interface *)
 
   let eval_gen nodes =
-    let topo = Owl_graph.topo_sort nodes in
-    CG_Init._init_terms topo;
-    Array.iter CG_Eval._eval_term topo
+    (* let topo = Owl_graph.topo_sort nodes in *)
+    (* Array.iter (fun s -> Owl_log.info "NODES: %s" (node_to_str s)) nodes; *)
+    CG_Init._init_terms nodes;
+    Array.iter CG_Eval._eval_term nodes
 
 
   let eval_elt xs = Array.map elt_to_node xs |> eval_gen
@@ -39,6 +40,21 @@ module Make_Nested
 
   let eval_graph graph =
     Graph.invalidate_rvs graph;
+    Array.iter (fun x -> set_reuse x false) (Graph.get_inputs graph);
+    (* let open Graph.Optimiser.Operator.Symbol.Shape.Type in
+     * let open Device in
+     * let open Owl_graph in
+     * Owl_graph.iter_ancestors (fun x ->
+     *     if id x = 3577 then
+     *       let () = Owl_log.info "iter! %s" (node_to_str x) in
+     *       let y = (attr x).value in
+     *       if Array.length y > 0 then
+     *         (\* Printf.printf "%f\n" (value_to_float y.(0)) *\)
+     *         A.print ~max_col:8 (value_to_arr y.(0))
+     *       else
+     *         Printf.printf "NOT INITIALISED\n"
+     *   )
+     *   (Graph.get_outputs graph); *)
     Graph.get_outputs graph |> eval_gen
 
 

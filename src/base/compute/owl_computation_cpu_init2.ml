@@ -14,33 +14,39 @@ module Make
 
   open Graph.Optimiser.Operator.Symbol
 
+  open Graph.Optimiser.Operator.Symbol.Shape.Type
+
   open Graph.Optimiser.Operator.Symbol.Shape.Type.Device
 
 
   (* utility functions *)
 
   let is_initialised x =
-    let x_val = get_value x in
     if is_elt x then false
-    else Array.length x_val > 0
+    else
+      let x_val = get_value x in
+      Array.length x_val > 0
 
 
   let make_value_from src dst =
     let dst_shp = node_shape dst in
     match src with
     | Some src -> (
-        (* inherit memory from the src node *)
-        let src_val = value_to_arr (get_value src).(0) in
-        let dst_val = arr_to_value (A.reshape src_val dst_shp) in
-        set_value dst [| dst_val |];
-        set_vnode dst [| src |]
-      )
+      (* inherit memory from the src node *)
+      (* if id dst = 3577 then (
+       *   Owl_log.info "HEYYY! 3577 reused %s" (node_to_str src)
+       * ); *)
+      let src_val = value_to_arr (get_value src).(0) in
+      let dst_val = arr_to_value (A.reshape src_val dst_shp) in
+      set_value dst [| dst_val |];
+      set_vnode dst [| src |]
+    )
     | None     -> (
-        (* allocate new memory for dst node *)
-        let dst_val = arr_to_value (A.zeros dst_shp) in
-        set_value dst [| dst_val |];
-        set_vnode dst [| |]
-      )
+      (* allocate new memory for dst node *)
+      let dst_val = arr_to_value (A.zeros dst_shp) in
+      set_value dst [| dst_val |];
+      set_vnode dst [| |]
+    )
 
 
   let to_allocate x =
@@ -154,18 +160,19 @@ module Make
     let refs = Hashtbl.create 256 in
     (* hashtable associating a number of elements to a reusable node *)
     let reusable = Hashtbl.create 256 in
+    let numel x = Array.fold_left ( * ) 1 (node_shape x) in
     let update_parent p =
       if to_allocate p && get_reuse p then (
         let num = Hashtbl.find refs (id p) in
         assert (num > 0);
         Hashtbl.replace refs (id p) (num - 1);
         if num - 1 = 0 then
-          let numel_p = Array.fold_left ( * ) 1 (node_shape p) in
+          let numel_p = numel p in
           Hashtbl.add reusable numel_p p
       )
     in
     let allocate x =
-      let numel_x = Array.fold_left ( * ) 1 (node_shape x) in
+      let numel_x = numel x in
       if Hashtbl.mem reusable numel_x then (
         let to_reuse = Hashtbl.find reusable numel_x in
         (* Owl_log.info "reuse %s." (node_to_str to_reuse);
@@ -177,19 +184,24 @@ module Make
         make_value_from None x
     in
 
-    let init x =
+    let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
 
-      if to_allocate x then (
-        if get_reuse x then (
-          Hashtbl.add refs (id x) (Array.length (children x))
-        );
-        if can_overwrite_parent x then (
-          Array.iter update_parent (Owl_utils.Array.unique (parents x));
-          allocate x
-        ) else (
-          allocate x;
-          Array.iter update_parent (Owl_utils.Array.unique (parents x))
+      if not (is_initialised x) then (
+        (* Owl_log.info "hein %s" (node_to_str x); *)
+        Array.iter init (parents x);
+
+        if to_allocate x then (
+          if get_reuse x then (
+            Hashtbl.add refs (id x) (Array.length (children x))
+          );
+          if can_overwrite_parent x then (
+            Array.iter update_parent (Owl_utils.Array.unique (parents x));
+            allocate x
+          ) else (
+            allocate x;
+            Array.iter update_parent (Owl_utils.Array.unique (parents x))
+          )
         )
       )
     in

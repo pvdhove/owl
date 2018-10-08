@@ -25,6 +25,7 @@ module Make_Nested
 
   (* core interface *)
 
+  (* TODO: make sure the order of init/eval always stays the same *)
   let eval_gen nodes =
     (* let topo = Owl_graph.topo_sort nodes in *)
     (* Array.iter (fun s -> Owl_log.info "NODES: %s" (node_to_str s)) nodes; *)

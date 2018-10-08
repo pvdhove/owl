@@ -173,10 +173,11 @@ module Make
     in
     let allocate x =
       let numel_x = numel x in
-      if Hashtbl.mem reusable numel_x then (
+      (* a node that cannot be reused cannot reuse either *)
+      if get_reuse x && Hashtbl.mem reusable numel_x then (
         let to_reuse = Hashtbl.find reusable numel_x in
         (* Owl_log.info "reuse %s." (node_to_str to_reuse);
-           Owl_log.info "for %s.\n" (node_to_str x); *)
+             Owl_log.info "for %s.\n" (node_to_str x); *)
         Hashtbl.remove reusable numel_x;
         make_value_from (Some to_reuse) x
       )

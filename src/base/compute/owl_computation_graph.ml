@@ -114,9 +114,9 @@ module Make
     (* check all the inputs must be variables *)
     assert (Array.for_all is_var input);
     (* set outputs' memory as not reusable *)
-    Array.iter (fun x -> set_reuse x false) output;
     (* create hash table to store input/output names *)
     let input_output = Array.append input output in
+    Array.iter (fun x -> set_reuse x false) input_output;
     let htbl_size = Array.length input_output in
     let htbl = Hashtbl.create htbl_size in
     (* add nodes' name into the hash table  *)

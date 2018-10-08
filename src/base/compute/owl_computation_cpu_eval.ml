@@ -257,7 +257,7 @@ module Make
     set_value x [|arr_to_value out|]
 
 
-  (* [f] is inpure, for [arr array -> arr] *)
+  (* [f] is impure, for [arr array -> arr] *)
   and _eval_map_01 x f =
     let inputs = Array.map (fun parent ->
       _eval_term parent;
@@ -292,7 +292,7 @@ module Make
     set_value x [|elt_to_value out|]
 
 
-  (* [f] is inpure, for [arr -> elt -> arr] *)
+  (* [f] is impure, for [arr -> elt -> arr] *)
   and _eval_map_04 x f =
     let x_parent_0 = (parents x).(0) in
     let x_parent_1 = (parents x).(1) in
@@ -305,7 +305,7 @@ module Make
     (* A.print ~max_row:10 ~max_col:10 out *)
 
 
-  (* [f] is inpure, for [elt -> arr -> arr] *)
+  (* [f] is impure, for [elt -> arr -> arr] *)
   and _eval_map_05 x f =
     let x_parent_0 = (parents x).(0) in
     let x_parent_1 = (parents x).(1) in
@@ -326,7 +326,7 @@ module Make
     set_value x [|elt_to_value a|]
 
 
-  (* [f] is inpure, for [arr array -> elt array -> arr] *)
+  (* [f] is impure, for [arr array -> elt array -> arr] *)
   and _eval_map_07 x f =
     let x_parents = parents x in
     Array.iter _eval_term x_parents;

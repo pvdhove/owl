@@ -161,6 +161,7 @@ module Make
     (* hashtable associating a number of elements to a reusable node *)
     let reusable = Hashtbl.create 256 in
     let numel x = Array.fold_left ( * ) 1 (node_shape x) in
+
     let update_parent p =
       if to_allocate p && get_reuse p then (
         let num = Hashtbl.find refs (id p) in
@@ -168,6 +169,7 @@ module Make
         Hashtbl.replace refs (id p) (num - 1);
         if num - 1 = 0 then
           let numel_p = numel p in
+
           Hashtbl.add reusable numel_p p
       )
     in

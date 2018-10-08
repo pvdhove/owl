@@ -28,24 +28,22 @@ module Make
       Array.length x_val > 0
 
 
-  let make_value_from src dst =
+  let make_value_from block dst =
     let dst_shp = node_shape dst in
-    match src with
-    | Some src -> (
-      (* inherit memory from the src node *)
-      (* if id dst = 3577 then (
-       *   Owl_log.info "HEYYY! 3577 reused %s" (node_to_str src)
-       * ); *)
-      let src_val = value_to_arr (get_value src).(0) in
+    match block with
+    | Some block -> (
+      let src_val = value_to_arr (get_value_block block) in
       let dst_val = arr_to_value (A.reshape src_val dst_shp) in
-      set_value dst [| dst_val |];
-      set_vnode dst [| src |]
+      add_node_block block dst;
+      set_block dst [| block |];
+      set_value dst [| dst_val |]
     )
     | None     -> (
       (* allocate new memory for dst node *)
       let dst_val = arr_to_value (A.zeros dst_shp) in
-      set_value dst [| dst_val |];
-      set_vnode dst [| |]
+      let new_block = make_block dst_val dst in
+      set_block dst [| new_block |];
+      set_value dst [| dst_val |]
     )
 
 
@@ -96,6 +94,8 @@ module Make
         | Scalar_Sigmoid                                 -> false
         | _                                              -> true
 
+  (* written to be as safe as possible, but can probably set to true many more
+   * functions *)
   let can_overwrite_parent x =
      match (get_operator x) with
         | Empty _shape                                   -> false
@@ -156,9 +156,9 @@ module Make
   let _init_terms nodes =
     (* TODO: only count nodes that are encountered during the traversal as
     refs *)
-    (* hashtable associating to each node its number of unused references *)
+    (* hashtable associating to each node its number of references left to use *)
     let refs = Hashtbl.create 256 in
-    (* hashtable associating a number of elements to a reusable node *)
+    (* hashtable associating a number of elements to a reusable block *)
     let reusable = Hashtbl.create 256 in
     let numel x = Array.fold_left ( * ) 1 (node_shape x) in
 
@@ -168,9 +168,7 @@ module Make
         assert (num > 0);
         Hashtbl.replace refs (id p) (num - 1);
         if num - 1 = 0 then
-          let numel_p = numel p in
-
-          Hashtbl.add reusable numel_p p
+          Array.iter (fun b -> Hashtbl.add reusable b.size b) (get_block_assigned p)
       )
     in
     let allocate x =

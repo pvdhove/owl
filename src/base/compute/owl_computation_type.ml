@@ -25,14 +25,24 @@ module Make
 
   type t = attr Owl_graph.node
 
+  and block = {
+      (* the next field assumes that all the elements have the same size. If
+       * different types of elements are mixed in the same CG, should replace it
+       * with a size in bytes. *)
+    size           : int;       (* the number of elements of the block *)
+    mutable active : t option;  (* the node whose memory is being stored (if any) *)
+    mutable value  : value;     (* the value of the active node *)
+    mutable nodes  : t array;   (* the nodes sharing the memory block *)
+  }
+
   and attr = {
     mutable op     : op;                        (* operation stored in this node *)
     mutable freeze : bool;                      (* whether or not a node can link to other nodes *)
     mutable reuse  : bool;                      (* whether others can resuse the allocated memory *)
     mutable state  : state;                     (* state to show whether re-evaluation is needed *)
     mutable shape  : (int array option) array;  (* shape of the output values stored in the node *)
-    mutable value  : value array;               (* output values of the node *)
-    mutable vnode  : t array;                   (* where current node inherits its value memory. *)
+    mutable values : value array;               (* output values of the node *)
+    mutable block  : (block array) option;      (* the memory blocks to store the node values *)
   }
 
   and arr = Arr of t

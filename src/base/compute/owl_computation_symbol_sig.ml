@@ -32,7 +32,7 @@ module type Sig = sig
   val node_numel : attr Owl_graph.node -> int
   (** TODO *)
 
-  val is_shape_unkown : attr Owl_graph.node -> bool
+  val is_shape_unknown : attr Owl_graph.node -> bool
   (** TODO *)
 
   val infer_shape_graph : attr Owl_graph.node array -> unit
@@ -56,7 +56,7 @@ module type Sig = sig
   val elt_to_node : elt -> t
   (** TODO *)
 
-  val make_node : ?name:string -> ?value:value array -> ?shape:int array option array -> ?freeze:bool -> ?reuse:bool -> ?state:state -> op -> attr Owl_graph.node
+  val make_node : ?name:string -> ?values:value array -> ?shape:int array option array -> ?freeze:bool -> ?reuse:bool -> ?state:state -> op -> attr Owl_graph.node
   (** TODO *)
 
   val make_then_connect : ?shape:int array option array -> op -> attr Owl_graph.node array -> attr Owl_graph.node
@@ -72,6 +72,30 @@ module type Sig = sig
   (** TODO *)
 
   val const_elt : string -> A.elt -> elt
+  (** TODO *)
+
+  val make_block : value -> attr Owl_graph.node -> block
+  (** TODO *)
+
+  val get_value_block : block -> value
+  (** TODO *)
+
+  val get_block : attr Owl_graph.node -> block array option
+  (** TODO *)
+
+  val get_block_assigned : attr Owl_graph.node -> block array
+  (** TODO *)
+
+  val set_block : attr Owl_graph.node -> block array -> unit
+  (** TODO *)
+
+  val add_node_block : block -> attr Owl_graph.node -> unit
+  (** TODO *)
+
+  val get_active_node : block -> (attr Owl_graph.node) option
+  (** TODO *)
+
+  val set_active_node : block -> attr Owl_graph.node -> unit
   (** TODO *)
 
   val set_value : attr Owl_graph.node -> value array -> unit
@@ -92,14 +116,10 @@ module type Sig = sig
   val get_reuse : attr Owl_graph.node -> bool
   (** TODO *)
 
-  val set_vnode : attr Owl_graph.node -> t array -> unit
+  val is_shared : attr Owl_graph.node -> bool
   (** TODO *)
 
-  val get_vnode : attr Owl_graph.node -> t array
-  (** TODO *)
-
-  val is_inherited : attr Owl_graph.node -> bool
-  (** TODO *)
+  val get_shared_nodes : attr Owl_graph.node -> (attr Owl_graph.node) array
 
   val is_var : attr Owl_graph.node -> bool
   (** TODO *)

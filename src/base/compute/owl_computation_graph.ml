@@ -157,21 +157,21 @@ module Make
   (* manipulate input and output pairs *)
 
   let get_node_arr_val x =
-    let value = (attr x).value in
+    let value = get_value x in
     assert (Array.length value > 0);
     value_to_arr value.(0)
 
 
   let get_node_elt_val x =
-    let value = (attr x).value in
+    let value = get_value x in
     assert (Array.length value > 0);
     value_to_elt value.(0)
 
 
-  let set_node_arr_val x v = (attr x).value <- [| v |]
+  let set_node_arr_val x v = set_value x [| v |]
 
 
-  let set_node_elt_val x v = (attr x).value <- [| v |]
+  let set_node_elt_val x v = set_value x [| v |]
 
 
   let is_iopair_safe i o =
@@ -224,7 +224,7 @@ module Make
 
 
   let init_inputs f graph =
-    Array.iter (fun v -> (attr v).value <- [| f v |]) graph.input
+    Array.iter (fun v -> set_value v [| f v |]) graph.input
 
 
   let optimise graph = optimise_nodes graph.output

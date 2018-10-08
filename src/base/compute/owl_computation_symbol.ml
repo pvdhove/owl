@@ -18,7 +18,7 @@ module Make
   open Shape.Type
 
   open Shape.Type.Device
-
+  (* Put getters/setters in owl_comp_type and hide implementation *)
 
   (* string representation of symbols *)
 
@@ -239,7 +239,7 @@ module Make
   let node_numel x = Array.fold_left ( * ) 1 (node_shape x)
 
 
-  let is_shape_unkown x =
+  let is_shape_unknown x =
     let x_shape = (attr x).shape in
     match x_shape.(0) with
     | Some _ -> true
@@ -248,7 +248,7 @@ module Make
 
   let infer_shape_graph xs =
     iter_descendants (fun x ->
-      if is_shape_unkown x = false then (
+      if is_shape_unknown x = false then (
         let x_attr = attr x in
         let x_parents = parents x in
         x_attr.shape <- infer_shape x_attr.op x_parents
@@ -287,14 +287,24 @@ module Make
   let elt_to_node = function Elt x -> x
 
 
-  let make_node ?name ?value ?shape ?freeze ?reuse ?state op =
-    let value = match value with Some v -> v | None -> [| |] in
+  let make_block value node =
+    let size = match value with
+      | EltVal _ -> 1
+      | ArrVal a -> A.numel a in
+    { size; active = Some node; value; nodes = [| node |] }
+
+
+  let make_node ?name ?values ?shape ?freeze ?reuse ?state op =
     let shape = match shape with Some s -> s | None -> [| None |] in
     let state = match state with Some s -> s | None -> Invalid in
     let reuse = match reuse with Some s -> s | None -> true in
     let freeze = match freeze with Some s -> s | None -> false in
-    let vnode = [| (* used by the computation engine only *) |] in
-    Owl_graph.node ?name { op; freeze; reuse; state; shape; value; vnode }
+    let values = match values with Some v -> v | None -> [| |] in
+    let attr = { op; freeze; reuse; state; shape; values; block = None; } in
+    let node = Owl_graph.node ?name attr in
+    if values <> [| |] then
+      attr.block <- Some (Array.map (fun v -> make_block v node) values);
+    node
 
 
   let make_then_connect ?shape op parents =
@@ -325,23 +335,57 @@ module Make
 
 
   let const_arr name v =
-    let value = [| arr_to_value v |] in
+    let values = [| arr_to_value v |] in
     let shape = [| Some A.(shape v) |] in
-    make_node ~name ~value ~shape ~freeze:true ~reuse:false ~state:Valid Const
+    make_node ~name ~values ~shape ~freeze:true ~reuse:false ~state:Valid Const
     |> node_to_arr
 
 
   let const_elt name v =
-    let value = [| elt_to_value v |] in
+    let values = [| elt_to_value v |] in
     let shape = [| Some [||] |] in
-    make_node ~name ~value ~shape ~freeze:true ~reuse:false ~state:Valid Const
+    make_node ~name ~values ~shape ~freeze:true ~reuse:false ~state:Valid Const
     |> node_to_elt
 
 
-  let set_value x v = (attr x).value <- v
+  let get_nodes b = b.nodes
 
 
-  let get_value x = (attr x).value
+  let get_value_block b = b.value
+
+
+  let get_block x = (attr x).block
+
+
+  let get_block_assigned x = match get_block x with
+    | Some b -> b
+    | None   -> failwith "Symbol:get_block_assigned: block not assigned"
+
+
+  let set_block x b = (attr x).block <- Some b
+
+
+  let add_node_block b x =
+    b.nodes <- Owl_utils.Array.([| x |] @ (get_nodes b))
+
+
+  let get_active_node b = b.active
+
+
+  let set_active_node b x = b.active <- Some x
+
+
+  (* TODO: is it OK to set a block before the initialisation? *)
+  let set_value x v =
+    (match get_block x with
+     | Some _ -> ()
+     | None   -> set_block x (Array.map (fun v -> make_block v x) v));
+    (attr x).values <- v
+
+
+  let get_value x = match get_block x with
+    | Some _ -> (attr x).values
+    | None    -> [| |]
 
 
   let set_operator x op = (attr x).op <- op
@@ -361,13 +405,16 @@ module Make
   let get_reuse x = (attr x).reuse
 
 
-  let set_vnode x v = (attr x).vnode <- v
+  let is_shared x = match (get_block x) with
+    | Some bs -> Array.exists (fun i -> i > 1)
+                   (Array.map (fun b -> Array.length (get_nodes b)) bs)
+    | None    -> false
 
 
-  let get_vnode x = (attr x).vnode
-
-
-  let is_inherited x = Array.length (get_vnode x) > 0
+  (* might contain the same element twice and itself *)
+  let get_shared_nodes x = match (get_block x) with
+    | Some bs -> Owl_utils.Array.flatten (Array.map get_nodes bs)
+    | None    -> [| x |]
 
 
   let is_var x = (attr x).op = Var
@@ -390,14 +437,15 @@ module Make
     | _         -> failwith "Owl_computation_symbol:is_elt"
 
 
+  (* TODO: change this with block *)
   let is_assigned x =
-    let value = (attr x).value in
+    let value = get_value x in
     let valen = Array.length value in
     valen > 0
 
-
+  (* TODO: change this with block *)
   let check_assigned x =
-    let value = (attr x).value in
+    let value = get_value x in
     let valen = Array.length value in
     if valen = 0 then (
       Owl_log.error "value not assigned: %s" (node_to_str x);
@@ -412,14 +460,6 @@ module Make
 
 
   let invalidate x =
-    (* if (get_operator x) = ScalarMul && (attr x).state = Valid then (
-     *   Owl_log.info "invalidate %s" (node_to_str x);
-     *   let y = (attr x).value in
-     *   if Array.length y > 0 then
-     *     A.print ~max_col:10 (value_to_arr y.(0))
-     *   else
-     *     Printf.printf "NOT INITIALISED\n"
-     * ); *)
     (attr x).state <- Invalid
 
 
@@ -442,7 +482,7 @@ module Make
 
 
   let unpack_arr x =
-    let value = (arr_to_node x |> attr).value in
+    let value = arr_to_node x |> get_value in
     let valen = Array.length value in
     if valen = 0 then (
       Owl_log.error "not evaluated: %s" (arr_to_node x |> node_to_str);
@@ -455,7 +495,7 @@ module Make
 
 
   let unpack_elt x =
-    let value = (elt_to_node x |> attr).value in
+    let value = elt_to_node x |> get_value in
     let valen = Array.length value in
     if valen = 0 then (
       Owl_log.error "not evaluated: %s" (elt_to_node x |> node_to_str);

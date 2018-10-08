@@ -19,9 +19,15 @@ module Make
 
   (* utility functions *)
 
-  let update_validity x =
-    validate x;
-    Array.iter invalidate (get_vnode x)
+  let invalidate_opt x_option =
+    match x_option with
+    | Some x -> invalidate x
+    | None   -> ()
+
+  let update_validity x b =
+    invalidate_opt (get_active_node b);
+    set_active_node b x;
+    validate x
 
 
   (* core evaluation function *)
@@ -236,7 +242,7 @@ module Make
        *   else
        *     Printf.printf "NOT INITIALISED\n"
        * ); *)
-      update_validity x
+      Array.iter (fun b -> update_validity x b) (get_block_assigned x)
 
 
   (* [f] is pure, for [arr array -> arr] *)

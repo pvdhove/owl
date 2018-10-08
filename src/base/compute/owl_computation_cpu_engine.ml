@@ -40,7 +40,6 @@ module Make_Nested
 
   let eval_graph graph =
     Graph.invalidate_rvs graph;
-    Array.iter (fun x -> set_reuse x false) (Graph.get_inputs graph);
     (* let open Graph.Optimiser.Operator.Symbol.Shape.Type in
      * let open Device in
      * let open Owl_graph in

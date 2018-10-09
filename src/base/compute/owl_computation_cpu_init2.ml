@@ -187,15 +187,14 @@ module Make
 
     let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
-
+      if get_reuse x then (
+        Hashtbl.add refs (id x) (Array.length (children x))
+      );
       if not (is_initialised x) then (
         (* Owl_log.info "hein %s" (node_to_str x); *)
         Array.iter init (parents x);
 
         if to_allocate x then (
-          if get_reuse x then (
-            Hashtbl.add refs (id x) (Array.length (children x))
-          );
           if can_overwrite_parent x then (
             Array.iter update_parent (Owl_utils.Array.unique (parents x));
             allocate x

@@ -8,13 +8,15 @@ open Neural.S.Algodiff
 
 
 let make_network input_shape =
-  input input_shape
-  |> lambda (fun x -> Maths.(x / F 256.))
-  |> conv2d [|5;5;1;32|] [|1;1|] ~act_typ:Activation.Relu
-  |> max_pool2d [|2;2|] [|2;2|]
+  let layer = input input_shape
+              |> lambda (fun x -> Maths.(x / F 256.))
+              |> conv2d [|5;5;1;32|] [|1;1|] ~act_typ:Activation.Relu
+
+            |> max_pool2d [|2;2|] [|2;2|]
   |> dropout 0.1
-  |> fully_connected 1024 ~act_typ:Activation.Relu
-  |> linear 10 ~act_typ:Activation.(Softmax 1)
+  |> fully_connected 1024 ~trainable:false ~act_typ:Activation.Relu
+  in
+  linear 10 ~act_typ:Activation.(Softmax 1) layer
   |> get_network
 
 
@@ -44,6 +46,5 @@ let test network =
   let fact = mat2num labels in
   let accu = Dense.Matrix.S.(elt_equal pred fact |> sum') in
   Owl_log.info "Accuracy on test set: %f" (accu /. (float_of_int m))
-
 
 let _ = train () |> test

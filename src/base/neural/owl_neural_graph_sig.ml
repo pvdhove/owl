@@ -66,6 +66,12 @@ module type Sig = sig
   val set_network_name : network -> string -> unit
   (** ``set_network_name n s`` sets the name of the network ``n`` to ``s``. *)
 
+  val set_trainable_node : node -> bool -> unit
+  (** Change the trainability of a node (``false`` means that the node is frozen). *)
+
+  val set_trainable_network : network -> bool -> unit
+  (** Change the trainability of a network (``false`` means that the network is frozen). *)
+
   val collect_output : node array -> t array
   (** Collect the output values of given nodes. *)
 

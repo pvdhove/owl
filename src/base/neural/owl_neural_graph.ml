@@ -120,6 +120,12 @@ module Make
                          (get_roots n)
 
 
+  let set_trainable_node n b = set_trainable n.neuron b
+
+
+  let set_trainable_network nn b = Array.iter (fun n -> set_trainable_node n b) nn.topo
+
+
   (* collect the outputs of a given set of nodes *)
   let collect_output nodes =
     Array.map (fun n ->
@@ -188,7 +194,9 @@ module Make
   let mkadj nn = Array.map (fun n -> mkadj n.neuron) nn.topo
 
 
-  let update nn us = Array.iter2 (fun n u -> update n.neuron u) nn.topo us
+  let update nn us =
+    let topo, us = Owl_utils.Array.filter2_split (fun _ u -> u <> [||]) nn.topo us in
+    Array.iter2 (fun n u -> update n.neuron u) topo us
 
 
   let run_inputs inputs nn =

@@ -134,10 +134,11 @@ module Linear : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int -> int -> Init.typ -> neuron_typ
+  val create : ?inputs:int -> int -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -188,10 +189,11 @@ module LinearNoBias : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int -> int -> Init.typ -> neuron_typ
+  val create : ?inputs:int -> int -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -249,10 +251,11 @@ module Recurrent : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?time_steps:int -> ?inputs:int -> int -> int -> Activation.typ -> Init.typ -> neuron_typ
+  val create : ?time_steps:int -> ?inputs:int -> int -> int -> Activation.typ -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -316,10 +319,11 @@ module LSTM : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?time_steps:int -> ?inputs:int -> int -> Init.typ -> neuron_typ
+  val create : ?time_steps:int -> ?inputs:int -> int -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -379,10 +383,11 @@ module GRU : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?time_steps:int -> ?inputs:int -> int -> Init.typ -> neuron_typ
+  val create : ?time_steps:int -> ?inputs:int -> int -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -437,10 +442,11 @@ module Conv1D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -495,10 +501,11 @@ module Conv2D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -553,10 +560,11 @@ module Conv3D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -612,10 +620,11 @@ module DilatedConv1D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -671,10 +680,11 @@ module DilatedConv2D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -730,10 +740,11 @@ module DilatedConv3D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -788,10 +799,11 @@ module TransposeConv1D : sig
     mutable init_typ : Init.typ;
     mutable in_shape : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -846,10 +858,11 @@ module TransposeConv2D : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -904,10 +917,11 @@ module TransposeConv3D : sig
     mutable init_typ : Init.typ;
     mutable in_shape : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> neuron_typ
+  val create : ?inputs:int array -> Owl_types.padding -> int array -> int array -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -959,10 +973,11 @@ module FullyConnected : sig
     mutable init_typ  : Init.typ;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int -> int -> Init.typ -> neuron_typ
+  val create : ?inputs:int -> int -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -1707,10 +1722,11 @@ module Normalisation : sig
     mutable training  : bool;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?training:bool -> ?decay:float -> ?mu:A.arr -> ?var:A.arr -> int -> neuron_typ
+  val create : ?training:bool -> ?decay:float -> ?mu:A.arr -> ?var:A.arr -> int -> bool -> neuron_typ
   (** Create the neuron. Note that axis 0 is the batch axis. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -1864,10 +1880,11 @@ module Embedding : sig
     mutable in_dim    : int;
     mutable in_shape  : int array;
     mutable out_shape : int array;
+    mutable trainable : bool;
   }
   (** Neuron type definition. *)
 
-  val create : ?inputs:int -> int -> int -> Init.typ -> neuron_typ
+  val create : ?inputs:int -> int -> int -> Init.typ -> bool -> neuron_typ
   (** Create the neuron. *)
 
   val connect : int array -> neuron_typ -> unit
@@ -2000,6 +2017,12 @@ val get_parameters : neuron -> t array
 
 val load : neuron -> t array -> unit
 (** Update all parameters of a neuron. *)
+
+val is_trainable : neuron -> bool
+(** Return true if the neuron is trainable, false otherwise. *)
+
+val set_trainable : neuron -> bool -> unit
+(** Change the trainability of a neuron. *)
 
 val copy : neuron -> neuron
 (** Make a deep copy of the neuron and its parameters. *)

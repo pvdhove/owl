@@ -97,7 +97,7 @@ module type Sig = sig
   (** Tag the neurons, used by ``Algodiff`` module. *)
 
   val mkpar : network -> t array array
-  (** Collect the parameters of neurons, used by ``Optimise`` module. *)
+  (** Collect the trainable parameters of neurons, used by ``Optimise`` module. *)
 
   val mkpri : network -> t array array
   (** Collect the primal values of neurons, used by ``Optimise`` module. *)
@@ -106,7 +106,7 @@ module type Sig = sig
   (** Collect the adjacent values of neurons, used by ``Optimise`` module. *)
 
   val update : network -> t array array -> unit
-  (** Update the parameters of neurons, used by ``Optimise`` module. *)
+  (** Update the trainable parameters of neurons, used by ``Optimise`` module. *)
 
   val run : t -> network -> t
   (** Execute the computations in all the neurons in a network with the given input. *)
@@ -156,7 +156,7 @@ Arguments:
   * ``activation``: name of activation function to use.
   *)
 
-  val linear : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int -> node -> node
+  val linear : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int -> node -> node
   (**
 ``linear ?act_typ units node`` adds the regular densely-connected NN node to
 ``node``.
@@ -166,18 +166,18 @@ Arguments:
   * ``act_typ``: Activation function to use.
   *)
 
-  val linear_nobias : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int -> node -> node
+  val linear_nobias : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int -> node -> node
   (**
 Similar to ``linear``, but does not use the bias vector.
   *)
 
-  val embedding : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int -> int -> node -> node
+  val embedding : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int -> int -> node -> node
   (** Create a node for embedding neuron. *)
 
-  val recurrent : ?name:string -> ?init_typ:Init.typ -> act_typ:Activation.typ -> int -> int -> node -> node
+  val recurrent : ?name:string -> ?init_typ:Init.typ -> ?trainable:bool -> act_typ:Activation.typ -> int -> int -> node -> node
   (** Create a node for recurrent neuron. *)
 
-  val lstm : ?name:string -> ?init_typ:Init.typ -> int -> node -> node
+  val lstm : ?name:string -> ?init_typ:Init.typ -> ?trainable:bool -> int -> node -> node
   (**
 ``lstm units node`` adds a LSTM node on previous ``node``.
 
@@ -185,7 +185,7 @@ Arguments:
   * ``units``: Positive integer, dimensionality of the output space.
   *)
 
-  val gru : ?name:string -> ?init_typ:Init.typ -> int -> node -> node
+  val gru : ?name:string -> ?init_typ:Init.typ -> ?trainable:bool -> int -> node -> node
   (**
 ``gru units node`` adds a Gated Recurrent Unit node on previous ``node``.
 
@@ -193,7 +193,7 @@ Arguments:
   * ``units``: Positive integer, dimensionality of the output space.
   *)
 
-  val conv1d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> node -> node
+  val conv1d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> node -> node
   (**
 ``conv1d kernel stride node`` adds a 1D convolution node (e.g. temporal
 convolution) on previous ``node``.
@@ -203,7 +203,7 @@ Arguments:
   * ``stride``: int array of 1 integer.
   *)
 
-  val conv2d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> node -> node
+  val conv2d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> node -> node
   (**
 ``conv2d kernel stride node`` adds a 2D convolution node (e.g. spatial convolution over images) on previous ``node``.
 
@@ -212,7 +212,7 @@ Arguments:
   * ``stride``: int array of 2 integers.
   *)
 
-  val conv3d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> node -> node
+  val conv3d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> node -> node
   (**
 ``conv3d kernel stride node`` adds a 3D convolution node (e.g. spatial
 convolution over volumes) on previous ``node``.
@@ -222,7 +222,7 @@ Arguments:
   * ``stride``: int array of 3 integers.
   *)
 
-  val dilated_conv1d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> int array -> node -> node
+  val dilated_conv1d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> int array -> node -> node
   (**
 ``dilated_conv1d kernel stride rate node`` adds a 1D dilated convolution node (e.g. temporal convolution) on previous ``node``.
 
@@ -232,7 +232,7 @@ Arguments:
   * ``rate``: int array of 1 integer.
   *)
 
-  val dilated_conv2d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> int array -> node -> node
+  val dilated_conv2d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> int array -> node -> node
   (**
 ``dilated_conv2d kernel stride rate node`` adds a 2D dilated convolution node (e.g. spatial convolution over images) on previous ``node``.
 
@@ -242,7 +242,7 @@ Arguments:
   * ``rate``: int array of 2 integers.
   *)
 
-  val dilated_conv3d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> int array -> node -> node
+  val dilated_conv3d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> int array -> node -> node
   (**
 ``dilated_conv3d kernel stride rate node`` adds a 3D dilated convolution node (e.g. spatial convolution over volumes) on previous ``node``.
 
@@ -252,7 +252,7 @@ Arguments:
   * ``rate``: int array of 3 integers.
   *)
 
-  val transpose_conv1d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> node -> node
+  val transpose_conv1d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> node -> node
   (**
 ``transpose_conv1d kernel stride node`` adds a 1D transpose convolution node (e.g. temporal convolution) on previous ``node``.
 
@@ -261,7 +261,7 @@ Arguments:
   * ``stride``: int array of 1 integer.
   *)
 
-  val transpose_conv2d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> node -> node
+  val transpose_conv2d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> node -> node
   (**
 ``transpose_conv2d kernel stride node`` adds a 2D transpose convolution node on previous ``node``.
 
@@ -270,7 +270,7 @@ Arguments:
   * ``stride``: int array of 2 integers.
   *)
 
-  val transpose_conv3d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int array -> int array -> node -> node
+  val transpose_conv3d : ?name:string -> ?padding:Owl_types.padding -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int array -> int array -> node -> node
   (**
 ``transpose_conv3d kernel stride node`` adds a 3D transpose convolution node (e.g. spatial convolution over volumes) on previous ``node``.
 
@@ -279,7 +279,7 @@ Arguments:
   * ``stride``: int array of 3 integers.
   *)
 
-  val fully_connected : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> int -> node -> node
+  val fully_connected : ?name:string -> ?init_typ:Init.typ -> ?act_typ:Activation.typ -> ?trainable:bool -> int -> node -> node
   (**
 ``fully_connected outputs node`` adds a fully connected node to ``node``.
 
@@ -396,7 +396,7 @@ Arguments:
   * ``rates``: float, drop probability
   *)
 
-  val normalisation : ?name:string -> ?axis:int -> ?training:bool -> ?decay:float -> ?mu:A.arr -> ?var:A.arr -> node -> node
+  val normalisation : ?name:string -> ?axis:int -> ?training:bool -> ?decay:float -> ?mu:A.arr -> ?var:A.arr -> ?trainable:bool -> node -> node
   (**
 ``normalisation axis node`` normalise the activations of the previous node at
 each batch.

@@ -219,9 +219,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs o init_typ =
+    let create ?inputs o init_typ trainable =
       let in_shape = match inputs with
         | Some i -> [|i|]
         | None   -> [|0|]
@@ -232,6 +233,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -263,7 +265,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.out_shape.(0) l.init_typ in
+      let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -292,9 +294,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs o init_typ =
+    let create ?inputs o init_typ trainable =
       let in_shape = match inputs with
         | Some i -> [|i|]
         | None   -> [|0|]
@@ -304,6 +307,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -328,7 +332,7 @@ module Make
     let update l u = l.w <- u.(0) |> primal'
 
     let copy l =
-      let l' = create l.out_shape.(0) l.init_typ in
+      let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -362,9 +366,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?time_steps ?inputs hiddens o act init_typ =
+    let create ?time_steps ?inputs hiddens o act init_typ trainable =
       let i = match inputs with Some i -> i | None -> 0 in
       let t = match time_steps with Some i -> i | None -> 0 in
       let h = hiddens in
@@ -380,6 +385,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = [|t;i|];
         out_shape = [|o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -443,7 +449,7 @@ module Make
       l.by  <- u.(4) |> primal'
 
     let copy l =
-      let l' = create l.hiddens l.out_shape.(0) l.act l.init_typ in
+      let l' = create l.hiddens l.out_shape.(0) l.act l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -500,9 +506,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?time_steps ?inputs o init_typ  =
+    let create ?time_steps ?inputs o init_typ trainable =
       let i = match inputs with Some i -> i | None -> 0 in
       let t = match time_steps with Some i -> i | None -> 0 in
       {
@@ -523,6 +530,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = [|t;i|];
         out_shape = [|o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -634,7 +642,7 @@ module Make
       l.bo  <- u.(11) |> primal'
 
     let copy l =
-      let l' = create l.out_shape.(0) l.init_typ in
+      let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -698,9 +706,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?time_steps ?inputs o init_typ =
+    let create ?time_steps ?inputs o init_typ trainable =
       let i = match inputs with Some i -> i | None -> 0 in
       let t = match time_steps with Some i -> i | None -> 0 in
       {
@@ -717,6 +726,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = [|t;i|];
         out_shape = [|o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -807,7 +817,7 @@ module Make
       l.bh  <- u.(8) |> primal'
 
     let copy l =
-      let l' = create l.out_shape.(0) l.init_typ in
+      let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -860,9 +870,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride init_typ =
+    let create ?inputs padding kernel stride init_typ trainable =
       let h, i, o = kernel.(0), kernel.(1), kernel.(2) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(1)); a
@@ -877,6 +888,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -912,7 +924,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -929,6 +941,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i]\n" l.stride.(0) ^
+      Printf.sprintf "    trainable : %s\n" (if l.trainable then "true" else "false") ^
       ""
 
     let to_name () = "conv1d"
@@ -949,9 +962,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride rate init_typ =
+    let create ?inputs padding kernel stride rate init_typ trainable =
       let h, i, o = kernel.(0), kernel.(1), kernel.(2) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(1)); a
@@ -967,6 +981,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1003,7 +1018,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.rate l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1040,9 +1055,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride init_typ =
+    let create ?inputs padding kernel stride init_typ trainable =
       let h, i, o = kernel.(0), kernel.(1), kernel.(2) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(1)); a
@@ -1057,6 +1073,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1092,7 +1109,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1128,9 +1145,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride init_typ =
+    let create ?inputs padding kernel stride init_typ trainable =
       let w, h, i, o = kernel.(0), kernel.(1), kernel.(2), kernel.(3) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(2)); a
@@ -1145,6 +1163,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; 0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1183,7 +1202,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1220,9 +1239,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride rate init_typ =
+    let create ?inputs padding kernel stride rate init_typ trainable =
       let w, h, i, o = kernel.(0), kernel.(1), kernel.(2), kernel.(3) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(2)); a
@@ -1238,6 +1258,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; 0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1278,7 +1299,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.rate l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1315,9 +1336,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride init_typ =
+    let create ?inputs padding kernel stride init_typ trainable =
       let w, h, i, o = kernel.(0), kernel.(1), kernel.(2), kernel.(3) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(2)); a
@@ -1332,6 +1354,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; 0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1370,7 +1393,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1406,9 +1429,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride init_typ =
+    let create ?inputs padding kernel stride init_typ trainable =
       let w, h, d, i, o = kernel.(0), kernel.(1), kernel.(2), kernel.(3), kernel.(4) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(3)); a
@@ -1423,6 +1447,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; 0; 0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1464,7 +1489,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1501,9 +1526,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride rate init_typ =
+    let create ?inputs padding kernel stride rate init_typ trainable =
       let w, h, d, i, o = kernel.(0), kernel.(1), kernel.(2), kernel.(3), kernel.(4) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(3)); a
@@ -1519,6 +1545,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; 0; 0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1563,7 +1590,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.rate l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1600,9 +1627,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs padding kernel stride init_typ =
+    let create ?inputs padding kernel stride init_typ trainable =
       let w, h, d, i, o = kernel.(0), kernel.(1), kernel.(2), kernel.(3), kernel.(4) in
       let in_shape = match inputs with
         | Some a -> assert (i = a.(3)); a
@@ -1617,6 +1645,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|0; 0; 0; o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1658,7 +1687,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.padding l.kernel l.stride l.init_typ in
+      let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -1691,9 +1720,10 @@ module Make
       mutable init_typ  : Init.typ;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs o init_typ =
+    let create ?inputs o init_typ trainable =
       let in_shape = match inputs with
         | Some i -> [|i|]
         | None   -> [|0|]
@@ -1704,6 +1734,7 @@ module Make
         init_typ  = init_typ;
         in_shape  = in_shape;
         out_shape = [|o|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -1735,7 +1766,7 @@ module Make
       l.b <- u.(1) |> primal'
 
     let copy l =
-      let l' = create l.out_shape.(0) l.init_typ in
+      let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -2668,9 +2699,10 @@ module Make
       mutable training  : bool;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?(training=true) ?(decay=0.99) ?mu ?var axis = {
+    let create ?(training=true) ?(decay=0.99) ?mu ?var axis trainable = {
       axis      = axis;
       beta      = Arr.empty [|0|];
       gamma     = Arr.empty [|0|];
@@ -2680,6 +2712,7 @@ module Make
       training  = training;
       in_shape  = [||];
       out_shape = [||];
+      trainable = trainable;
     }
 
     let connect out_shape l =
@@ -2720,7 +2753,7 @@ module Make
       l.var <- u.(1)
 
     let copy l =
-      let l' = create ~training:l.training ~decay:(unpack_flt l.decay) ~mu:(unpack_arr l.mu) ~var:(unpack_arr l.var) l.axis in
+      let l' = create ~training:l.training ~decay:(unpack_flt l.decay) ~mu:(unpack_arr l.mu) ~var:(unpack_arr l.var) l.axis l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -2899,9 +2932,10 @@ module Make
       mutable in_dim    : int;
       mutable in_shape  : int array;
       mutable out_shape : int array;
+      mutable trainable : bool;
     }
 
-    let create ?inputs in_dim out_dim init_typ =
+    let create ?inputs in_dim out_dim init_typ trainable =
       let i = match inputs with Some i -> i | None -> 0 in
       {
         w         = Mat.empty 0 0;
@@ -2909,6 +2943,7 @@ module Make
         in_dim    = in_dim;
         in_shape  = [|i|];
         out_shape = [|i;out_dim|];
+        trainable = trainable;
       }
 
     let connect out_shape l =
@@ -2934,7 +2969,7 @@ module Make
     let update l u = l.w <- u.(0) |> primal'
 
     let copy l =
-      let l' = create l.in_dim l.out_shape.(1) l.init_typ in
+      let l' = create l.in_dim l.out_shape.(1) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
       l'
 
@@ -3270,6 +3305,47 @@ module Make
                          Normalisation.update_non_trainable l [|u.(2); u.(3)|]
     | _               -> update l u
 
+
+  let is_trainable = function
+    | Linear l          -> Linear.(l.trainable)
+    | LinearNoBias l    -> LinearNoBias.(l.trainable)
+    | Embedding l       -> Embedding.(l.trainable)
+    | LSTM l            -> LSTM.(l.trainable)
+    | GRU l             -> GRU.(l.trainable)
+    | Recurrent l       -> Recurrent.(l.trainable)
+    | Conv1D l          -> Conv1D.(l.trainable)
+    | Conv2D l          -> Conv2D.(l.trainable)
+    | Conv3D l          -> Conv3D.(l.trainable)
+    | DilatedConv1D l   -> DilatedConv1D.(l.trainable)
+    | DilatedConv2D l   -> DilatedConv2D.(l.trainable)
+    | DilatedConv3D l   -> DilatedConv3D.(l.trainable)
+    | TransposeConv1D l -> TransposeConv1D.(l.trainable)
+    | TransposeConv2D l -> TransposeConv2D.(l.trainable)
+    | TransposeConv3D l -> TransposeConv3D.(l.trainable)
+    | FullyConnected l  -> FullyConnected.(l.trainable)
+    | Normalisation l   -> Normalisation.(l.trainable)
+    | _                 -> false
+
+
+  let set_trainable l b = match l with
+    | Linear l          -> Linear.(l.trainable <- b)
+    | LinearNoBias l    -> LinearNoBias.(l.trainable <- b)
+    | Embedding l       -> Embedding.(l.trainable <- b)
+    | LSTM l            -> LSTM.(l.trainable <- b)
+    | GRU l             -> GRU.(l.trainable <- b)
+    | Recurrent l       -> Recurrent.(l.trainable <- b)
+    | Conv1D l          -> Conv1D.(l.trainable <- b)
+    | Conv2D l          -> Conv2D.(l.trainable <- b)
+    | Conv3D l          -> Conv3D.(l.trainable <- b)
+    | DilatedConv1D l   -> DilatedConv1D.(l.trainable <- b)
+    | DilatedConv2D l   -> DilatedConv2D.(l.trainable <- b)
+    | DilatedConv3D l   -> DilatedConv3D.(l.trainable <- b)
+    | TransposeConv1D l -> TransposeConv1D.(l.trainable <- b)
+    | TransposeConv2D l -> TransposeConv2D.(l.trainable <- b)
+    | TransposeConv3D l -> TransposeConv3D.(l.trainable <- b)
+    | FullyConnected l  -> FullyConnected.(l.trainable <- b)
+    | Normalisation l   -> Normalisation.(l.trainable <- b)
+    | _                 -> ()
 
   let copy = function
     | Input l           -> Input Input.(copy l)

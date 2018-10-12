@@ -98,6 +98,9 @@ module type Sig = sig
   val set_active_node : block -> attr Owl_graph.node -> unit
   (** TODO *)
 
+  val block_id : attr Owl_graph.node -> int
+  (** TODO *)
+
   val set_value : attr Owl_graph.node -> value array -> unit
   (** TODO *)
 

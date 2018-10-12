@@ -380,6 +380,11 @@ module Make
   let set_active_node b x = b.active <- Some x
 
 
+  let block_id x = match get_block x with
+    | Some bs -> bs.(0).id
+    | None    -> -1
+
+
   let set_value x v =
     if get_block x = None then
       set_block x (Array.map (fun v -> make_block v x) v);

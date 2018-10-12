@@ -58,8 +58,9 @@ module Make
     in
     let node_s = fold_ancestors (fun a n ->
       let svs = shape_or_value n in
-      Printf.sprintf "%s%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s }\" ];\n"
-        a (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs
+      let b_id = block_id n in
+      Printf.sprintf "%s%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s; b:%i }\" ];\n"
+        a (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id
     ) "" graph.output
     in
     Printf.sprintf "digraph CG {\nnode [shape=record];\n%s%s}" edge_s node_s
@@ -114,9 +115,9 @@ module Make
     (* check all the inputs must be variables *)
     assert (Array.for_all is_var input);
     (* set outputs' memory as not reusable *)
+    Array.iter (fun x -> set_reuse x false) output;
     (* create hash table to store input/output names *)
     let input_output = Array.append input output in
-    Array.iter (fun x -> set_reuse x false) input_output;
     let htbl_size = Array.length input_output in
     let htbl = Hashtbl.create htbl_size in
     (* add nodes' name into the hash table  *)

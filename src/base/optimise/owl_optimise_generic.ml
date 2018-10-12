@@ -602,9 +602,7 @@ module Make
     (* operations in the ith iteration *)
     let iterate i =
       let xt, yt = bach_fun x y i in
-      Printf.printf "hi7.5\n";
       let yt', ws = forward xt in
-      Printf.printf "hi8\n";
       let loss = loss_fun yt yt' in
       (* take the mean of the loss *)
       let loss = Maths.(loss / (_f (Mat.row_num yt |> float_of_int))) in
@@ -614,7 +612,6 @@ module Make
         | false -> _f 0.
       in
       let loss = Maths.(loss + reg) in
-      Printf.printf "hi9\n";
       let ws, gs' = backward loss in
       loss |> primal', ws, gs'
     in
@@ -637,12 +634,10 @@ module Make
           state
         )
     in
-    Printf.printf "hi3\n";
 
     (* try to iterate all batches *)
     while Checkpoint.(state.stop = false) do
       let loss', ws, gs' = iterate Checkpoint.(state.current_batch) in
-      Printf.printf "hi3.5\n";
       (* check if the stopping criterion is met *)
       Checkpoint.(state.stop <- stop_fun (unpack_flt loss'));
       (* checkpoint of the optimisation if necessary *)
@@ -675,7 +670,6 @@ module Make
       (* force GC to release bigarray memory *)
       Gc.minor ();
     done;
-    Printf.printf "hi4\n";
 
     (* print optimisation summary *)
     if params.verbosity = true && Checkpoint.(state.current_batch >= state.batches) then

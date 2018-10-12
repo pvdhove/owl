@@ -3231,25 +3231,28 @@ module Make
     | _                 -> ()
 
 
-  let mktag t = function
-    | Linear l          -> Linear.mktag t l
-    | LinearNoBias l    -> LinearNoBias.mktag t l
-    | Embedding l       -> Embedding.mktag t l
-    | LSTM l            -> LSTM.mktag t l
-    | GRU l             -> GRU.mktag t l
-    | Recurrent l       -> Recurrent.mktag t l
-    | Conv1D l          -> Conv1D.mktag t l
-    | Conv2D l          -> Conv2D.mktag t l
-    | Conv3D l          -> Conv3D.mktag t l
-    | DilatedConv1D l   -> DilatedConv1D.mktag t l
-    | DilatedConv2D l   -> DilatedConv2D.mktag t l
-    | DilatedConv3D l   -> DilatedConv3D.mktag t l
-    | TransposeConv1D l -> TransposeConv1D.mktag t l
-    | TransposeConv2D l -> TransposeConv2D.mktag t l
-    | TransposeConv3D l -> TransposeConv3D.mktag t l
-    | FullyConnected l  -> FullyConnected.mktag t l
-    | Normalisation l   -> Normalisation.mktag t l
-    | _                 -> () (* activation, etc. *)
+  let mktag t l =
+    if is_trainable l then
+      match l with
+      | Linear l          -> Linear.mktag t l
+      | LinearNoBias l    -> LinearNoBias.mktag t l
+      | Embedding l       -> Embedding.mktag t l
+      | LSTM l            -> LSTM.mktag t l
+      | GRU l             -> GRU.mktag t l
+      | Recurrent l       -> Recurrent.mktag t l
+      | Conv1D l          -> Conv1D.mktag t l
+      | Conv2D l          -> Conv2D.mktag t l
+      | Conv3D l          -> Conv3D.mktag t l
+      | DilatedConv1D l   -> DilatedConv1D.mktag t l
+      | DilatedConv2D l   -> DilatedConv2D.mktag t l
+      | DilatedConv3D l   -> DilatedConv3D.mktag t l
+      | TransposeConv1D l -> TransposeConv1D.mktag t l
+      | TransposeConv2D l -> TransposeConv2D.mktag t l
+      | TransposeConv3D l -> TransposeConv3D.mktag t l
+      | FullyConnected l  -> FullyConnected.mktag t l
+      | Normalisation l   -> Normalisation.mktag t l
+      | _                 -> () (* activation, etc. *)
+    else ()
 
 
   let mkpar l =

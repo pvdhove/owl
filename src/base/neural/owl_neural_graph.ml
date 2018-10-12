@@ -669,7 +669,7 @@ module Make
     let h = Owl_io.marshal_from_file f in
     Array.iter (fun n ->
       let ws = Hashtbl.find h n.name in
-      Neuron.load n.neuron ws
+      Neuron.set_parameters n.neuron ws
     ) nn.topo
 
 

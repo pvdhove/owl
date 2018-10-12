@@ -157,13 +157,19 @@ module Linear : sig
   (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -219,6 +225,12 @@ module LinearNoBias : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -281,6 +293,12 @@ module Recurrent : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -350,6 +368,12 @@ module LSTM : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -414,6 +438,12 @@ module GRU : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -472,6 +502,12 @@ module Conv1D : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -532,6 +568,12 @@ module Conv2D : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -590,6 +632,12 @@ module Conv3D : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -651,6 +699,12 @@ module DilatedConv1D : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -710,6 +764,12 @@ module DilatedConv2D : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -771,6 +831,12 @@ module DilatedConv3D : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -829,6 +895,12 @@ module TransposeConv1D : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -889,6 +961,12 @@ module TransposeConv2D : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -948,6 +1026,12 @@ module TransposeConv3D : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -1003,6 +1087,12 @@ module FullyConnected : sig
 
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
+
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
 
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
@@ -1759,7 +1849,7 @@ module Normalisation : sig
   val update_non_trainable : neuron_typ -> t array -> unit
   (** Update non-trainable parameters of the neuron. *)
 
-  val load : neuron_typ -> t array -> unit
+  val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
 
   val get_parameters : neuron_typ -> t array
@@ -1917,6 +2007,12 @@ module Embedding : sig
   val update : neuron_typ -> t array -> unit
   (** Update parameters in a neuron, used by ``Optimise`` module. *)
 
+  val set_parameters : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 
@@ -2021,7 +2117,7 @@ val update : neuron -> t array -> unit
 val get_parameters : neuron -> t array
 (** Assemble all the parameters of the given neuron in an array. *)
 
-val load : neuron -> t array -> unit
+val set_parameters : neuron -> t array -> unit
 (** Update all parameters of a neuron. *)
 
 val is_trainable : neuron -> bool

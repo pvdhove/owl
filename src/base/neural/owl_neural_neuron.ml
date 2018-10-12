@@ -264,6 +264,12 @@ module Make
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -330,6 +336,11 @@ module Make
     let mkadj l = [|adjval l.w|]
 
     let update l u = l.w <- u.(0) |> primal'
+
+    let get_parameters l = [|l.w|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal'
 
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
@@ -442,6 +453,21 @@ module Make
     |]
 
     let update l u =
+      l.whh <- u.(0) |> primal';
+      l.wxh <- u.(1) |> primal';
+      l.why <- u.(2) |> primal';
+      l.bh  <- u.(3) |> primal';
+      l.by  <- u.(4) |> primal'
+
+    let get_parameters l = [|
+      l.whh;
+      l.wxh;
+      l.why;
+      l.bh;
+      l.by;
+    |]
+
+    let set_parameters l u =
       l.whh <- u.(0) |> primal';
       l.wxh <- u.(1) |> primal';
       l.why <- u.(2) |> primal';
@@ -641,6 +667,35 @@ module Make
       l.bf  <- u.(10) |> primal';
       l.bo  <- u.(11) |> primal'
 
+    let get_parameters l = [|
+      l.wxi;
+      l.whi;
+      l.wxc;
+      l.whc;
+      l.wxf;
+      l.whf;
+      l.wxo;
+      l.who;
+      l.bi;
+      l.bc;
+      l.bf;
+      l.bo;
+    |]
+
+    let set_parameters l u =
+      l.wxi <- u.(0)  |> primal';
+      l.whi <- u.(1)  |> primal';
+      l.wxc <- u.(2)  |> primal';
+      l.whc <- u.(3)  |> primal';
+      l.wxf <- u.(4)  |> primal';
+      l.whf <- u.(5)  |> primal';
+      l.wxo <- u.(6)  |> primal';
+      l.who <- u.(7)  |> primal';
+      l.bi  <- u.(8)  |> primal';
+      l.bc  <- u.(9)  |> primal';
+      l.bf  <- u.(10) |> primal';
+      l.bo  <- u.(11) |> primal'
+
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -816,6 +871,29 @@ module Make
       l.br  <- u.(7) |> primal';
       l.bh  <- u.(8) |> primal'
 
+    let get_parameters l = [|
+      l.wxz;
+      l.whz;
+      l.wxr;
+      l.whr;
+      l.wxh;
+      l.whh;
+      l.bz;
+      l.br;
+      l.bh;
+    |]
+
+    let set_parameters l u =
+      l.wxz <- u.(0) |> primal';
+      l.whz <- u.(1) |> primal';
+      l.wxr <- u.(2) |> primal';
+      l.whr <- u.(3) |> primal';
+      l.wxh <- u.(4) |> primal';
+      l.whh <- u.(5) |> primal';
+      l.bz  <- u.(6) |> primal';
+      l.br  <- u.(7) |> primal';
+      l.bh  <- u.(8) |> primal'
+
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -923,6 +1001,12 @@ module Make
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -1017,6 +1101,12 @@ module Make
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
     let copy l =
       let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -1105,6 +1195,12 @@ module Make
     let mkadj l = [|adjval l.w; adjval l.b|]
 
     let update l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
@@ -1198,6 +1294,12 @@ module Make
     let mkadj l = [|adjval l.w; adjval l.b|]
 
     let update l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
@@ -1298,6 +1400,12 @@ module Make
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
     let copy l =
       let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -1389,6 +1497,12 @@ module Make
     let mkadj l = [|adjval l.w; adjval l.b|]
 
     let update l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
@@ -1485,6 +1599,12 @@ module Make
     let mkadj l = [|adjval l.w; adjval l.b|]
 
     let update l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
@@ -1589,6 +1709,12 @@ module Make
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
     let copy l =
       let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -1686,6 +1812,12 @@ module Make
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
       mkpri l |> Array.map copy_primal' |> update l';
@@ -1762,6 +1894,12 @@ module Make
     let mkadj l = [|adjval l.w; adjval l.b|]
 
     let update l u =
+      l.w <- u.(0) |> primal';
+      l.b <- u.(1) |> primal'
+
+    let get_parameters l = [|l.w; l.b|]
+
+    let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
@@ -2752,7 +2890,7 @@ module Make
       l.mu <- u.(0);
       l.var <- u.(1)
 
-    let load l u =
+    let set_parameters l u =
       update l [|u.(0); u.(1)|];
       update_non_trainable l [|u.(2); u.(3)|]
 
@@ -2974,6 +3112,10 @@ module Make
     let mkadj l = [|adjval l.w|]
 
     let update l u = l.w <- u.(0) |> primal'
+
+    let get_parameters l = [|l.w|]
+
+    let set_parameters l u = l.w <- u.(0) |> primal'
 
     let copy l =
       let l' = create l.in_dim l.out_shape.(1) l.init_typ l.trainable in
@@ -3355,14 +3497,46 @@ module Make
     | _                 -> () (* activation, etc. *)
 
 
-  let get_parameters l = match l with
-    | Normalisation l -> Normalisation.get_parameters l
-    | _               -> mkpar l
+  let get_parameters = function
+    | Linear l          -> Linear.get_parameters l
+    | LinearNoBias l    -> LinearNoBias.get_parameters l
+    | Embedding l       -> Embedding.get_parameters l
+    | LSTM l            -> LSTM.get_parameters l
+    | GRU l             -> GRU.get_parameters l
+    | Recurrent l       -> Recurrent.get_parameters l
+    | Conv1D l          -> Conv1D.get_parameters l
+    | Conv2D l          -> Conv2D.get_parameters l
+    | Conv3D l          -> Conv3D.get_parameters l
+    | DilatedConv1D l   -> DilatedConv1D.get_parameters l
+    | DilatedConv2D l   -> DilatedConv2D.get_parameters l
+    | DilatedConv3D l   -> DilatedConv3D.get_parameters l
+    | TransposeConv1D l -> TransposeConv1D.get_parameters l
+    | TransposeConv2D l -> TransposeConv2D.get_parameters l
+    | TransposeConv3D l -> TransposeConv3D.get_parameters l
+    | FullyConnected l  -> FullyConnected.get_parameters l
+    | Normalisation l   -> Normalisation.get_parameters l
+    | _                 -> [||]
 
 
-  let load l u = match l with
-    | Normalisation l -> Normalisation.load l u
-    | _               -> update l u
+  let set_parameters l u = match l with
+    | Linear l          -> Linear.set_parameters l u
+    | LinearNoBias l    -> LinearNoBias.set_parameters l u
+    | Embedding l       -> Embedding.set_parameters l u
+    | LSTM l            -> LSTM.set_parameters l u
+    | GRU l             -> GRU.set_parameters l u
+    | Recurrent l       -> Recurrent.set_parameters l u
+    | Conv1D l          -> Conv1D.set_parameters l u
+    | Conv2D l          -> Conv2D.set_parameters l u
+    | Conv3D l          -> Conv3D.set_parameters l u
+    | DilatedConv1D l   -> DilatedConv1D.set_parameters l u
+    | DilatedConv2D l   -> DilatedConv2D.set_parameters l u
+    | DilatedConv3D l   -> DilatedConv3D.set_parameters l u
+    | TransposeConv1D l -> TransposeConv1D.set_parameters l u
+    | TransposeConv2D l -> TransposeConv2D.set_parameters l u
+    | TransposeConv3D l -> TransposeConv3D.set_parameters l u
+    | FullyConnected l  -> FullyConnected.set_parameters l u
+    | Normalisation l   -> Normalisation.set_parameters l u
+    | _                 -> ()
 
 
   let copy = function

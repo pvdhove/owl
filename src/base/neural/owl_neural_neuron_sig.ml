@@ -1743,6 +1743,12 @@ module Normalisation : sig
   val update_non_trainable : neuron_typ -> t array -> unit
   (** Update non-trainable parameters of the neuron. *)
 
+  val load : neuron_typ -> t array -> unit
+  (** Update all parameters of the neuron. *)
+
+  val get_parameters : neuron_typ -> t array
+  (** Assemble all parameters of the neuron. *)
+
   val copy : neuron_typ -> neuron_typ
   (** Make a deep copy of the neuron and its parameters. *)
 

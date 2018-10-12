@@ -160,24 +160,24 @@ module Make
     let refs = Hashtbl.create 256 in
     (* hashtable associating a number of elements to a reusable block *)
     let reusable = Hashtbl.create 256 in
-    let numel x = Array.fold_left ( * ) 1 (node_shape x) in
 
     let update_parent p =
-      if to_allocate p && get_reuse p then (
-        let num = Hashtbl.find refs (id p) in
+      let idp = id p in
+      if Hashtbl.mem refs idp then (
+        let num = Hashtbl.find refs idp in
         assert (num > 0);
-        Hashtbl.replace refs (id p) (num - 1);
+        Hashtbl.replace refs idp (num - 1);
         if num - 1 = 0 then
-          Array.iter (fun b -> Hashtbl.add reusable b.size b) (get_block_assigned p)
+          Array.iter (fun b -> Hashtbl.add reusable b.size b) (get_block_exn p)
       )
     in
     let allocate x =
-      let numel_x = numel x in
+      let numel_x = node_numel x in
       (* a node that cannot be reused cannot reuse either *)
-      if get_reuse x && Hashtbl.mem reusable numel_x then (
+      if Hashtbl.mem reusable numel_x then (
         let to_reuse = Hashtbl.find reusable numel_x in
         (* Owl_log.info "reuse %s." (node_to_str to_reuse);
-             Owl_log.info "for %s.\n" (node_to_str x); *)
+           Owl_log.info "for %s.\n" (node_to_str x); *)
         Hashtbl.remove reusable numel_x;
         make_value_from (Some to_reuse) x
       )
@@ -187,21 +187,22 @@ module Make
 
     let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
-      if get_reuse x then (
-        Hashtbl.add refs (id x) (Array.length (children x))
-      );
-      if not (is_initialised x) then (
-        (* Owl_log.info "hein %s" (node_to_str x); *)
-        Array.iter init (parents x);
 
+      if not (is_initialised x) then (
+        Array.iter init (parents x);
         if to_allocate x then (
-          if can_overwrite_parent x then (
-            Array.iter update_parent (Owl_utils.Array.unique (parents x));
-            allocate x
-          ) else (
-            allocate x;
-            Array.iter update_parent (Owl_utils.Array.unique (parents x))
+          if is_reusable x then (
+            Hashtbl.add refs (id x) (refnum x);
+            if can_overwrite_parent x then (
+              Array.iter update_parent (Owl_utils.Array.unique (parents x));
+              allocate x
+            ) else (
+              allocate x;
+              Array.iter update_parent (Owl_utils.Array.unique (parents x))
+            )
           )
+          else
+            make_value_from None x
         )
       )
     in

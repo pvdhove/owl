@@ -56,7 +56,7 @@ module type Sig = sig
   val elt_to_node : elt -> t
   (** TODO *)
 
-  val make_node : ?name:string -> ?values:value array -> ?shape:int array option array -> ?freeze:bool -> ?reuse:bool -> ?state:state -> op -> attr Owl_graph.node
+  val make_node : ?name:string -> ?value:value array -> ?shape:int array option array -> ?freeze:bool -> ?reuse:bool -> ?state:state -> op -> attr Owl_graph.node
   (** TODO *)
 
   val make_then_connect : ?shape:int array option array -> op -> attr Owl_graph.node array -> attr Owl_graph.node
@@ -83,7 +83,7 @@ module type Sig = sig
   val get_block : attr Owl_graph.node -> block array option
   (** TODO *)
 
-  val get_block_assigned : attr Owl_graph.node -> block array
+  val get_block_exn : attr Owl_graph.node -> block array
   (** TODO *)
 
   val set_block : attr Owl_graph.node -> block array -> unit
@@ -113,7 +113,7 @@ module type Sig = sig
   val set_reuse : attr Owl_graph.node -> bool -> unit
   (** TODO *)
 
-  val get_reuse : attr Owl_graph.node -> bool
+  val is_reusable : attr Owl_graph.node -> bool
   (** TODO *)
 
   val is_shared : attr Owl_graph.node -> bool

@@ -33,9 +33,9 @@ module Make
   (* core evaluation function *)
 
   let rec _eval_term x =
+    Owl_log.debug "eval %s..." (node_to_str x);
 
     if is_valid x = false then
-      (* let () = Owl_log.info "eval %s..." (node_to_str x) in *)
       let _ = try
         match (get_operator x) with
         | Noop                                          -> _eval_map_00 x (fun x -> x.(0))
@@ -242,7 +242,7 @@ module Make
        *   else
        *     Printf.printf "NOT INITIALISED\n"
        * ); *)
-      Array.iter (fun b -> update_validity x b) (get_block_assigned x)
+      Array.iter (fun b -> update_validity x b) (get_block_exn x)
 
 
   (* [f] is pure, for [arr array -> arr] *)

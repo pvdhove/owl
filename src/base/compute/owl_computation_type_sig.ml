@@ -24,8 +24,9 @@ module type Sig = sig
 
   and block = {
     size           : int;      (* the number of elements of the block *)
+    id             : int;      (* id of the block *)
     mutable active : t option; (* the node whose memory is being stored (if any) *)
-    mutable value  : value;    (* the value of the active node *)
+    mutable memory : value;    (* the value of the active node *)
     (* TODO: replace that with list *)
     mutable nodes  : t array;  (* the nodes sharing the memory block *)
   }
@@ -37,7 +38,7 @@ module type Sig = sig
     mutable reuse  : bool;                      (* whether others can reuse the allocated memory *)
     mutable state  : state;                     (* state to show whether re-evaluation is needed *)
     mutable shape  : (int array option) array;  (* shape of the output values stored in the node *)
-    mutable values : value array;               (* output values of the node *)
+    mutable value  : value array;               (* output values of the node *)
     mutable block  : (block array) option;      (* the memory blocks to store the node values *)
   }
   (** TODO *)

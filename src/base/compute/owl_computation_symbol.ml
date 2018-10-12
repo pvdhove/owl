@@ -260,7 +260,7 @@ module Make
     assert (Array.length shp > 0);
     let s = match shp.(0) with
       | Some s -> Owl_utils_array.to_string string_of_int s
-      | None   -> "unkown"
+      | None   -> "unknown"
     in
     Printf.sprintf "[%s]" s
 
@@ -287,23 +287,27 @@ module Make
   let elt_to_node = function Elt x -> x
 
 
-  let make_block value node =
-    let size = match value with
+  let _global_id = ref 0
+
+
+  let make_block memory node =
+    _global_id := !_global_id + 1;
+    let size = match memory with
       | EltVal _ -> 1
       | ArrVal a -> A.numel a in
-    { size; active = Some node; value; nodes = [| node |] }
+    { size; active = Some node; memory; nodes = [| node |]; id = !_global_id }
 
 
-  let make_node ?name ?values ?shape ?freeze ?reuse ?state op =
+  let make_node ?name ?value ?shape ?freeze ?reuse ?state op =
     let shape = match shape with Some s -> s | None -> [| None |] in
     let state = match state with Some s -> s | None -> Invalid in
     let reuse = match reuse with Some s -> s | None -> true in
     let freeze = match freeze with Some s -> s | None -> false in
-    let values = match values with Some v -> v | None -> [| |] in
-    let attr = { op; freeze; reuse; state; shape; values; block = None; } in
+    let value = match value with Some v -> v | None -> [| |] in
+    let attr = { op; freeze; reuse; state; shape; value; block = None; } in
     let node = Owl_graph.node ?name attr in
-    if values <> [| |] then
-      attr.block <- Some (Array.map (fun v -> make_block v node) values);
+    if value <> [| |] then
+      attr.block <- Some (Array.map (fun v -> make_block v node) value);
     node
 
 
@@ -318,6 +322,7 @@ module Make
     (* define the flow of computation graph, no duplicates *)
     let uniq_parents = Owl_utils_array.unique parents in
     Array.iter (fun parent ->
+      (* TODO: This does not make sense with optimise module. *)
       if (attr parent).freeze = false then
         connect_descendants [|parent|] [|child|]
     ) uniq_parents;
@@ -335,38 +340,38 @@ module Make
 
 
   let const_arr name v =
-    let values = [| arr_to_value v |] in
+    let value = [| arr_to_value v |] in
     let shape = [| Some A.(shape v) |] in
-    make_node ~name ~values ~shape ~freeze:true ~reuse:false ~state:Valid Const
+    make_node ~name ~value ~shape ~freeze:true ~reuse:false ~state:Valid Const
     |> node_to_arr
 
 
   let const_elt name v =
-    let values = [| elt_to_value v |] in
+    let value = [| elt_to_value v |] in
     let shape = [| Some [||] |] in
-    make_node ~name ~values ~shape ~freeze:true ~reuse:false ~state:Valid Const
+    make_node ~name ~value ~shape ~freeze:true ~reuse:false ~state:Valid Const
     |> node_to_elt
 
 
-  let get_nodes b = b.nodes
+  let get_nodes_block b = b.nodes
 
 
-  let get_value_block b = b.value
+  let get_value_block b = b.memory
 
 
   let get_block x = (attr x).block
 
 
-  let get_block_assigned x = match get_block x with
+  let get_block_exn x = match get_block x with
     | Some b -> b
-    | None   -> failwith "Symbol:get_block_assigned: block not assigned"
+    | None   -> failwith "Symbol:get_block_exn: block not assigned"
 
 
   let set_block x b = (attr x).block <- Some b
 
 
   let add_node_block b x =
-    b.nodes <- Owl_utils.Array.([| x |] @ (get_nodes b))
+    b.nodes <- Owl_utils.Array.([| x |] @ (get_nodes_block b))
 
 
   let get_active_node b = b.active
@@ -375,17 +380,14 @@ module Make
   let set_active_node b x = b.active <- Some x
 
 
-  (* TODO: is it OK to set a block before the initialisation? *)
   let set_value x v =
-    (match get_block x with
-     | Some _ -> ()
-     | None   -> set_block x (Array.map (fun v -> make_block v x) v));
-    (attr x).values <- v
+    if get_block x = None then
+      set_block x (Array.map (fun v -> make_block v x) v);
+    (* TODO: replace with set_value_block? *)
+    (attr x).value <- v
 
 
-  let get_value x = match get_block x with
-    | Some _ -> (attr x).values
-    | None    -> [| |]
+  let get_value x = (attr x).value
 
 
   let set_operator x op = (attr x).op <- op
@@ -402,18 +404,17 @@ module Make
       (attr x).reuse <- reuse
 
 
-  let get_reuse x = (attr x).reuse
+  let is_reusable x = (attr x).reuse
 
 
   let is_shared x = match (get_block x) with
-    | Some bs -> Array.exists (fun i -> i > 1)
-                   (Array.map (fun b -> Array.length (get_nodes b)) bs)
+    | Some bs -> Array.length (get_nodes_block bs.(0)) > 1
     | None    -> false
 
 
   (* might contain the same element twice and itself *)
   let get_shared_nodes x = match (get_block x) with
-    | Some bs -> Owl_utils.Array.flatten (Array.map get_nodes bs)
+    | Some bs -> Owl_utils.Array.flatten (Array.map get_nodes_block bs)
     | None    -> [| x |]
 
 
@@ -459,8 +460,7 @@ module Make
   let validate x = (attr x).state <- Valid
 
 
-  let invalidate x =
-    (attr x).state <- Invalid
+  let invalidate x = (attr x).state <- Invalid
 
 
   let invalidate_graph x = iter_descendants invalidate [|x|]

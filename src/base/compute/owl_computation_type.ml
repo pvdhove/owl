@@ -33,7 +33,7 @@ module Make
     id             : int;       (* id of the block *)
     mutable active : t option;  (* the node whose memory is being stored (if any) *)
     mutable memory : value;     (* the placeholder for the value *)
-    mutable nodes  : t array;   (* the nodes sharing the memory block *)
+    mutable nodes  : t list;    (* the nodes sharing the memory block *)
   }
 
   and attr = {

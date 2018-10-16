@@ -295,7 +295,7 @@ module Make
     let size = match memory with
       | EltVal _ -> 1
       | ArrVal a -> A.numel a in
-    { size; active = Some node; memory; nodes = [| node |]; id = !_global_id }
+    { size; active = Some node; memory; nodes = [ node ]; id = !_global_id }
 
 
   let make_node ?name ?value ?shape ?freeze ?reuse ?state op =
@@ -322,7 +322,6 @@ module Make
     (* define the flow of computation graph, no duplicates *)
     let uniq_parents = Owl_utils_array.unique parents in
     Array.iter (fun parent ->
-      (* TODO: This does not make sense with optimise module. *)
       if (attr parent).freeze = false then
         connect_descendants [|parent|] [|child|]
     ) uniq_parents;
@@ -359,6 +358,9 @@ module Make
   let get_value_block b = b.memory
 
 
+  let set_value_block b v = b.memory <- v
+
+
   let get_block x = (attr x).block
 
 
@@ -371,7 +373,7 @@ module Make
 
 
   let add_node_block b x =
-    b.nodes <- Owl_utils.Array.([| x |] @ (get_nodes_block b))
+    b.nodes <- x :: (get_nodes_block b)
 
 
   let get_active_node b = b.active
@@ -386,10 +388,10 @@ module Make
 
 
   let set_value x v =
-    if get_block x = None then
-      set_block x (Array.map (fun v -> make_block v x) v);
-    (* TODO: replace with set_value_block? *)
-    (attr x).value <- v
+    (match get_block x with
+    | None -> set_block x (Array.map (fun v -> make_block v x) v)
+    | Some bs -> set_value_block bs.(0) v.(0));
+    (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
 
 
   let get_value x = (attr x).value
@@ -413,13 +415,16 @@ module Make
 
 
   let is_shared x = match (get_block x) with
-    | Some bs -> Array.length (get_nodes_block bs.(0)) > 1
+    | Some bs -> (match get_nodes_block bs.(0) with
+                  | _ :: _ :: _ -> true
+                  | _           -> false
+                 )
     | None    -> false
 
 
   (* might contain the same element twice and itself *)
   let get_shared_nodes x = match (get_block x) with
-    | Some bs -> Owl_utils.Array.flatten (Array.map get_nodes_block bs)
+    | Some bs -> Array.of_list (get_nodes_block bs.(0))
     | None    -> [| x |]
 
 
@@ -443,19 +448,16 @@ module Make
     | _         -> failwith "Owl_computation_symbol:is_elt"
 
 
-  (* TODO: change this with block *)
   let is_assigned x =
-    let value = get_value x in
-    let valen = Array.length value in
-    valen > 0
+    match get_block x with
+    | Some _ -> true
+    | None   -> false
 
-  (* TODO: change this with block *)
+
   let check_assigned x =
-    let value = get_value x in
-    let valen = Array.length value in
-    if valen = 0 then (
+    if not (is_assigned x) then (
       Owl_log.error "value not assigned: %s" (node_to_str x);
-      assert (valen > 0)
+      failwith "owl_computation_symbol:check_assigned"
     )
 
 

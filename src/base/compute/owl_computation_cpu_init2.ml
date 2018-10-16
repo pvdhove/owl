@@ -21,13 +21,6 @@ module Make
 
   (* utility functions *)
 
-  let is_initialised x =
-    if is_elt x then false
-    else
-      let x_val = get_value x in
-      Array.length x_val > 0
-
-
   let make_value_from block dst =
     let dst_shp = node_shape dst in
     match block with
@@ -154,8 +147,6 @@ module Make
   (* core initialisation function *)
 
   let _init_terms nodes =
-    (* TODO: only count nodes that are encountered during the traversal as
-    refs *)
     (* hashtable associating to each node its number of references left to use *)
     let refs = Hashtbl.create 256 in
     (* hashtable associating a number of elements to a reusable block *)
@@ -188,7 +179,7 @@ module Make
     let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
 
-      if not (is_initialised x) then (
+      if not (is_assigned x) then (
         Array.iter init (parents x);
         if to_allocate x then (
           if is_reusable x then (

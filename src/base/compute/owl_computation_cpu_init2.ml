@@ -192,8 +192,10 @@ module Make
               Array.iter update_parent (Owl_utils.Array.unique (parents x))
             )
           )
-          else
+          else (
+            Array.iter update_parent (Owl_utils.Array.unique (parents x));
             make_value_from None x
+          )
         )
       )
     in

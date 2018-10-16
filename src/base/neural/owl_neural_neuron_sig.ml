@@ -154,7 +154,7 @@ module Linear : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
   (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
@@ -163,7 +163,7 @@ module Linear : sig
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -215,10 +215,10 @@ module LinearNoBias : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
@@ -283,16 +283,16 @@ module Recurrent : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -357,16 +357,16 @@ module LSTM : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -427,16 +427,16 @@ module GRU : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -492,16 +492,16 @@ module Conv1D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -557,16 +557,16 @@ module Conv2D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -622,16 +622,16 @@ module Conv3D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -688,16 +688,16 @@ module DilatedConv1D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -754,16 +754,16 @@ module DilatedConv2D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -820,16 +820,16 @@ module DilatedConv3D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -885,16 +885,16 @@ module TransposeConv1D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -950,16 +950,16 @@ module TransposeConv2D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -1015,16 +1015,16 @@ module TransposeConv3D : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -1077,16 +1077,16 @@ module FullyConnected : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
@@ -1835,7 +1835,7 @@ module Normalisation : sig
   (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
@@ -1996,16 +1996,16 @@ module Embedding : sig
   (** Tag the neuron, used by ``Algodiff`` module. *)
 
   val mkpar : neuron_typ -> t array
-  (** Assemble all the parameters in an array, used by ``Optimise`` module. *)
+  (** Assemble all the trainable parameters in an array, used by ``Optimise`` module. *)
 
   val mkpri : neuron_typ -> t array
-  (** Assemble all the primial values in an array, used by ``Optimise`` module. *)
+  (** Assemble all the primal values in an array, used by ``Optimise`` module. *)
 
   val mkadj : neuron_typ -> t array
   (** Assemble all the adjacent values in an array, used by ``Optimise`` module. *)
 
   val update : neuron_typ -> t array -> unit
-  (** Update parameters in a neuron, used by ``Optimise`` module. *)
+  (** Update trainable parameters in a neuron, used by ``Optimise`` module. *)
 
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)

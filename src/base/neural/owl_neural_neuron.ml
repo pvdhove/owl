@@ -280,11 +280,12 @@ module Make
     let to_string l =
       let wm, wn = l.in_shape.(0), l.out_shape.(0) in
       let bm, bn = 1, l.out_shape.(0) in
-      Printf.sprintf "    Linear : matrix in:(*,%i) out:(*,%i) \n" l.in_shape.(0) l.out_shape.(0) ^
+      Printf.sprintf "    Linear : matrix in:(*,%i) out:(*,%i)\n" l.in_shape.(0) l.out_shape.(0) ^
       Printf.sprintf "    init   : %s\n" (Init.to_string l.init_typ) ^
       Printf.sprintf "    params : %i\n" (wm * wn + bn) ^
       Printf.sprintf "    w      : %i x %i\n" wm wn ^
       Printf.sprintf "    b      : %i x %i\n" bm bn ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "linear"
@@ -355,6 +356,7 @@ module Make
       Printf.sprintf "    init         : %s\n" (Init.to_string l.init_typ) ^
       Printf.sprintf "    params       : %i\n" (wm * wn) ^
       Printf.sprintf "    w            : %i x %i\n" wm wn ^
+      Printf.sprintf "    trainable    : %b\n" l.trainable ^
       ""
 
     let to_name () = "linearnobias"
@@ -504,7 +506,9 @@ module Make
       Printf.sprintf "    why       : %i x %i\n" h o ^
       Printf.sprintf "    bh        : %i x %i\n" 1 h ^
       Printf.sprintf "    by        : %i x %i\n" 1 o ^
-      Printf.sprintf "    act       : %s\n" (Activation.activation_to_string l.act)
+      Printf.sprintf "    act       : %s\n" (Activation.activation_to_string l.act) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
+      ""
 
     let to_name () = "recurrent"
 
@@ -737,6 +741,7 @@ module Make
       Printf.sprintf "    bc     : %i x %i\n" 1 o ^
       Printf.sprintf "    bf     : %i x %i\n" 1 o ^
       Printf.sprintf "    bo     : %i x %i\n" 1 o ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "lstm"
@@ -929,6 +934,7 @@ module Make
       Printf.sprintf "    bz     : %i x %i\n" 1 o ^
       Printf.sprintf "    br     : %i x %i\n" 1 o ^
       Printf.sprintf "    bh     : %i x %i\n" 1 o ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "gru"
@@ -1025,7 +1031,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i]\n" l.stride.(0) ^
-      Printf.sprintf "    trainable : %s\n" (if l.trainable then "true" else "false") ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "conv1d"
@@ -1126,6 +1132,7 @@ module Make
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i]\n" l.stride.(0) ^
       Printf.sprintf "    rate   : [%i]\n" l.stride.(0) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "dilated_conv1d"
@@ -1222,6 +1229,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i]\n" l.stride.(0) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "transpose_conv1d"
@@ -1321,6 +1329,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ws.(3) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i; %i]\n" l.stride.(0) l.stride.(1) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "conv2d"
@@ -1425,6 +1434,7 @@ module Make
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i; %i]\n" l.stride.(0) l.stride.(1) ^
       Printf.sprintf "    rate   : [%i; %i]\n" l.rate.(0) l.rate.(1) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "dilated_conv2d"
@@ -1524,6 +1534,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ws.(3) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i; %i]\n" l.stride.(0) l.stride.(1) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "transpose_conv2d"
@@ -1626,6 +1637,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ws.(3)  ws.(4) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i; %i; %i]\n" l.stride.(0) l.stride.(1) l.stride.(2) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "conv3d"
@@ -1734,6 +1746,7 @@ module Make
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i; %i; %i]\n" l.stride.(0) l.stride.(1) l.stride.(2) ^
       Printf.sprintf "    rate   : [%i; %i; %i]\n" l.rate.(0) l.rate.(1) l.rate.(2) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "dilated_conv3d"
@@ -1836,6 +1849,7 @@ module Make
       Printf.sprintf "    kernel : %i x %i x %i x %i x %i\n" ws.(0) ws.(1) ws.(2) ws.(3)  ws.(4) ^
       Printf.sprintf "    b      : %i\n" bn.(0) ^
       Printf.sprintf "    stride : [%i; %i; %i]\n" l.stride.(0) l.stride.(1) l.stride.(2) ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "transpose_conv3d"
@@ -1925,6 +1939,7 @@ module Make
       Printf.sprintf "    params         : %i\n" (wm * wn + bn) ^
       Printf.sprintf "    w              : %i x %i\n" wm wn ^
       Printf.sprintf "    b              : %i x %i\n" 1 bn ^
+      Printf.sprintf "    trainable      : %b\n" l.trainable ^
       ""
 
     let to_name () = "fullyconnected"
@@ -2928,7 +2943,9 @@ module Make
       Printf.sprintf "    decay         : %g\n" (unpack_flt l.decay) ^
       Printf.sprintf "    params        : %i\n" (l.in_shape.(l.axis - 1) * 2) ^
       Printf.sprintf "    beta          : [%s]\n" s_str ^
-      Printf.sprintf "    gamma         : [%s]\n" s_str
+      Printf.sprintf "    gamma         : [%s]\n" s_str ^
+      Printf.sprintf "    trainable     : %b\n" l.trainable ^
+      ""
 
     let to_name () = "normalisation"
 
@@ -3137,6 +3154,7 @@ module Make
       Printf.sprintf "    in_dim    : %i\n" l.in_dim ^
       Printf.sprintf "    params    : %i\n" (wm * wn) ^
       Printf.sprintf "    w         : %i x %i\n" wm wn ^
+      Printf.sprintf "    trainable : %b\n" l.trainable ^
       ""
 
     let to_name () = "embedding"
@@ -3476,25 +3494,28 @@ module Make
     else [||]
 
 
-  let update l u = match l with
-    | Linear l          -> Linear.update l u
-    | LinearNoBias l    -> LinearNoBias.update l u
-    | Embedding l       -> Embedding.update l u
-    | LSTM l            -> LSTM.update l u
-    | GRU l             -> GRU.update l u
-    | Recurrent l       -> Recurrent.update l u
-    | Conv1D l          -> Conv1D.update l u
-    | Conv2D l          -> Conv2D.update l u
-    | Conv3D l          -> Conv3D.update l u
-    | DilatedConv1D l   -> DilatedConv1D.update l u
-    | DilatedConv2D l   -> DilatedConv2D.update l u
-    | DilatedConv3D l   -> DilatedConv3D.update l u
-    | TransposeConv1D l -> TransposeConv1D.update l u
-    | TransposeConv2D l -> TransposeConv2D.update l u
-    | TransposeConv3D l -> TransposeConv3D.update l u
-    | FullyConnected l  -> FullyConnected.update l u
-    | Normalisation l   -> Normalisation.update l u
-    | _                 -> () (* activation, etc. *)
+  let update l u =
+    if is_trainable l then
+      match l with
+      | Linear l          -> Linear.update l u
+      | LinearNoBias l    -> LinearNoBias.update l u
+      | Embedding l       -> Embedding.update l u
+      | LSTM l            -> LSTM.update l u
+      | GRU l             -> GRU.update l u
+      | Recurrent l       -> Recurrent.update l u
+      | Conv1D l          -> Conv1D.update l u
+      | Conv2D l          -> Conv2D.update l u
+      | Conv3D l          -> Conv3D.update l u
+      | DilatedConv1D l   -> DilatedConv1D.update l u
+      | DilatedConv2D l   -> DilatedConv2D.update l u
+      | DilatedConv3D l   -> DilatedConv3D.update l u
+      | TransposeConv1D l -> TransposeConv1D.update l u
+      | TransposeConv2D l -> TransposeConv2D.update l u
+      | TransposeConv3D l -> TransposeConv3D.update l u
+      | FullyConnected l  -> FullyConnected.update l u
+      | Normalisation l   -> Normalisation.update l u
+      | _                 -> () (* activation, etc. *)
+    else ()
 
 
   let get_parameters = function

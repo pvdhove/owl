@@ -45,4 +45,5 @@ let test network =
   let accu = Dense.Matrix.S.(elt_equal pred fact |> sum') in
   Owl_log.info "Accuracy on test set: %f" (accu /. (float_of_int m))
 
+
 let _ = train () |> test

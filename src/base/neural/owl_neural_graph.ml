@@ -194,9 +194,7 @@ module Make
   let mkadj nn = Array.map (fun n -> mkadj n.neuron) nn.topo
 
 
-  let update nn us =
-    let topo, us = Owl_utils.Array.filter2_split (fun _ u -> u <> [||]) nn.topo us in
-    Array.iter2 (fun n u -> update n.neuron u) topo us
+  let update nn us = Array.iter2 (fun n u -> update n.neuron u) nn.topo us
 
 
   let run_inputs inputs nn =

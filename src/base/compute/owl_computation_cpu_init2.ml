@@ -23,21 +23,12 @@ module Make
 
   let make_value_from block dst =
     let dst_shp = node_shape dst in
-    match block with
-    | Some block -> (
-      let src_val = value_to_arr (get_value_block block) in
-      let dst_val = arr_to_value (A.reshape src_val dst_shp) in
-      add_node_block block dst;
-      set_block dst [| block |];
-      set_value dst [| dst_val |]
-    )
-    | None     -> (
-      (* allocate new memory for dst node *)
-      let dst_val = arr_to_value (A.zeros dst_shp) in
-      let new_block = make_block dst_val dst in
-      set_block dst [| new_block |];
-      set_value dst [| dst_val |]
-    )
+    let dst_numel = node_numel dst in
+    let src_val = value_to_arr (get_value_block block) in
+    let dst_val = arr_to_value (A.reshape (A.sub_left src_val 0 dst_numel) dst_shp) in
+    add_node_block block dst;
+    set_block dst [| block |];
+    set_value dst [| dst_val |]
 
 
   let to_allocate x =
@@ -147,10 +138,21 @@ module Make
   (* core initialisation function *)
 
   let _init_terms nodes =
+    let block_id = ref 100000 in
     (* hashtable associating to each node its number of references left to use *)
     let refs = Hashtbl.create 256 in
-    (* hashtable associating a number of elements to a reusable block *)
+    (* hashtable associating a number of elements to the id of a reusable block *)
     let reusable = Hashtbl.create 256 in
+    (* hashtable associating the id of a block to each node *)
+    let node_to_block = Hashtbl.create 256 in
+    (* hashtable associating to each block its size *)
+    let block_to_size = Hashtbl.create 256 in
+    (* *)
+    let id_to_node = Hashtbl.create 256 in
+
+    let is_initialised x =
+      is_assigned x || Hashtbl.mem node_to_block (id x)
+    in
 
     let update_parent p =
       let idp = id p in
@@ -158,28 +160,44 @@ module Make
         let num = Hashtbl.find refs idp in
         assert (num > 0);
         Hashtbl.replace refs idp (num - 1);
-        if num - 1 = 0 then
-          Array.iter (fun b -> Hashtbl.add reusable b.size b) (get_block_exn p)
+        if num - 1 = 0 then (
+          let block_id = Hashtbl.find node_to_block (id p) in
+          let block_size = Hashtbl.find block_to_size block_id in
+          Hashtbl.add reusable block_size block_id
+        )
       )
     in
+
+    let allocate_new x =
+      let numel_x = node_numel x in
+      block_id := !block_id + 1;
+      Hashtbl.add node_to_block (id x) !block_id;
+      Hashtbl.add block_to_size !block_id numel_x
+    in
+
     let allocate x =
       let numel_x = node_numel x in
       (* a node that cannot be reused cannot reuse either *)
       if Hashtbl.mem reusable numel_x then (
-        let to_reuse = Hashtbl.find reusable numel_x in
+        let block_id_to_reuse = Hashtbl.find reusable numel_x in (* TODO: optimise *)
         (* Owl_log.info "reuse %s." (node_to_str to_reuse);
            Owl_log.info "for %s.\n" (node_to_str x); *)
         Hashtbl.remove reusable numel_x;
-        make_value_from (Some to_reuse) x
+        Hashtbl.add node_to_block (id x) block_id_to_reuse;
+        let block_size = Hashtbl.find block_to_size block_id_to_reuse in
+        if block_size < numel_x then
+          Hashtbl.replace block_to_size block_id_to_reuse numel_x
       )
-      else
-        make_value_from None x
+      else (
+        allocate_new x
+      )
     in
 
     let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
 
-      if not (is_assigned x) then (
+      if not (is_initialised x) then (
+        Hashtbl.add id_to_node (id x) x;
         Array.iter init (parents x);
         if to_allocate x then (
           if is_reusable x then (
@@ -192,12 +210,28 @@ module Make
               Array.iter update_parent (Owl_utils.Array.unique (parents x))
             )
           )
-          else
-            make_value_from None x
+          else (
+            Array.iter update_parent (Owl_utils.Array.unique (parents x));
+            allocate_new x
+          )
         )
       )
     in
-    Array.iter init nodes
+    Array.iter init nodes;
+    let id_to_block = Hashtbl.create 256 in
+    Hashtbl.iter
+      (fun x_id b_id ->
+        let x = Hashtbl.find id_to_node x_id in
+        if Hashtbl.mem id_to_block b_id then (
+          let block = Hashtbl.find id_to_block b_id in
+          make_value_from block x
+        )
+        else (
+          let size = Hashtbl.find block_to_size b_id in
+          let block = make_empty_block ~id:b_id size x in
+          make_value_from block x
+        )
+      ) node_to_block
 
 end
 

@@ -290,12 +290,22 @@ module Make
   let _global_id = ref 0
 
 
-  let make_block memory node =
-    _global_id := !_global_id + 1;
+  let make_empty_block ?id size node =
+    let id = match id with
+      | Some id -> id
+      | None -> _global_id := !_global_id + 1; !_global_id in
+    let memory = arr_to_value (A.empty [|size|]) in (* or zeros? *)
+    { size; active = Some node; memory; nodes = [ node ]; id; }
+
+
+  let make_value_block ?id memory node =
+    let id = match id with
+      | Some id -> id
+      | None -> _global_id := !_global_id + 1; !_global_id in
     let size = match memory with
       | EltVal _ -> 1
-      | ArrVal a -> A.numel a in
-    { size; active = Some node; memory; nodes = [ node ]; id = !_global_id }
+      | ArrVal x -> A.numel x in
+    { size; active = Some node; memory; nodes = [ node ]; id; }
 
 
   let make_node ?name ?value ?shape ?freeze ?reuse ?state op =
@@ -307,7 +317,7 @@ module Make
     let attr = { op; freeze; reuse; state; shape; value; block = None; } in
     let node = Owl_graph.node ?name attr in
     if value <> [| |] then
-      attr.block <- Some (Array.map (fun v -> make_block v node) value);
+      attr.block <- Some (Array.map (fun v -> make_value_block v node) value);
     node
 
 
@@ -388,10 +398,18 @@ module Make
 
 
   let set_value x v =
-    (match get_block x with
-    | None -> set_block x (Array.map (fun v -> make_block v x) v)
-    | Some bs -> set_value_block bs.(0) v.(0));
-    (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
+    match (attr x).value.(0), v.(0) with
+    | ArrVal xv, ArrVal vv ->
+       (match get_block x with
+        | Some _  -> A.copy_ ~out:xv vv
+        | None    -> (
+          set_block x [| make_value_block v.(0) x |];
+          (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
+        )
+       )
+    | EltVal _, EltVal _ -> (attr x).value <- v
+    | _, _ -> failwith
+                "owl_computation_symbol:set_value: data of different type (arr, elt)"
 
 
   let get_value x = (attr x).value

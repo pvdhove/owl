@@ -28,7 +28,8 @@ module Make
     let dst_val = arr_to_value (A.reshape (A.sub_left src_val 0 dst_numel) dst_shp) in
     add_node_block block dst;
     set_block dst [| block |];
-    set_value dst [| dst_val |]
+    (* TODO: ugly, clean this *)
+    (attr dst).value <- [| dst_val |]
 
 
   let to_allocate x =
@@ -218,6 +219,7 @@ module Make
       )
     in
     Array.iter init nodes;
+
     let id_to_block = Hashtbl.create 256 in
     Hashtbl.iter
       (fun x_id b_id ->
@@ -229,6 +231,7 @@ module Make
         else (
           let size = Hashtbl.find block_to_size b_id in
           let block = make_empty_block ~id:b_id size x in
+          Hashtbl.add id_to_block b_id block;
           make_value_from block x
         )
       ) node_to_block

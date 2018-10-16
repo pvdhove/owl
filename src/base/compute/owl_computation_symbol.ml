@@ -18,7 +18,7 @@ module Make
   open Shape.Type
 
   open Shape.Type.Device
-  (* Put getters/setters in owl_comp_type and hide implementation *)
+  (* TODO: Put getters/setters in owl_comp_type and hide implementation *)
 
   (* string representation of symbols *)
 
@@ -316,8 +316,9 @@ module Make
     let value = match value with Some v -> v | None -> [| |] in
     let attr = { op; freeze; reuse; state; shape; value; block = None; } in
     let node = Owl_graph.node ?name attr in
-    if value <> [| |] then
+    if value <> [| |] then (
       attr.block <- Some (Array.map (fun v -> make_value_block v node) value);
+    );
     node
 
 
@@ -383,7 +384,7 @@ module Make
 
 
   let add_node_block b x =
-    b.nodes <- x :: (get_nodes_block b)
+    b.nodes <- x :: b.nodes
 
 
   let get_active_node b = b.active
@@ -398,18 +399,20 @@ module Make
 
 
   let set_value x v =
-    match (attr x).value.(0), v.(0) with
-    | ArrVal xv, ArrVal vv ->
+    match v.(0) with
+    | ArrVal vv ->
        (match get_block x with
-        | Some _  -> A.copy_ ~out:xv vv
+        | Some _ ->
+           let xv = value_to_arr (attr x).value.(0) in
+           A.copy_ ~out:xv vv
         | None    -> (
           set_block x [| make_value_block v.(0) x |];
           (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
         )
        )
-    | EltVal _, EltVal _ -> (attr x).value <- v
-    | _, _ -> failwith
-                "owl_computation_symbol:set_value: data of different type (arr, elt)"
+    | EltVal _ ->
+       set_block x [| make_value_block v.(0) x |];
+       (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
 
 
   let get_value x = (attr x).value
@@ -440,7 +443,7 @@ module Make
     | None    -> false
 
 
-  (* might contain the same element twice and itself *)
+  (* contains itself *)
   let get_shared_nodes x = match (get_block x) with
     | Some bs -> Array.of_list (get_nodes_block bs.(0))
     | None    -> [| x |]

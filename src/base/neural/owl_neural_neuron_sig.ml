@@ -1843,12 +1843,6 @@ module Normalisation : sig
   val update : neuron_typ -> t array -> unit
   (** Update trainable parameters of the neuron, used by ``Optimise`` module. *)
 
-  val non_trainable_par : neuron_typ -> t array
-  (** Assemble all the non-trainable parameters in an array. *)
-
-  val update_non_trainable : neuron_typ -> t array -> unit
-  (** Update non-trainable parameters of the neuron. *)
-
   val set_parameters : neuron_typ -> t array -> unit
   (** Update all parameters of the neuron. *)
 

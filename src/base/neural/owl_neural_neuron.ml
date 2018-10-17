@@ -250,29 +250,31 @@ module Make
       Mat.reset l.w;
       Mat.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
+
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
-      mkpri l |> Array.map copy_primal' |> update l';
+      Array.map primal (get_parameters l) |> Array.map copy_primal' |> set_parameters l';
       l'
 
     let run x l = Maths.((x *@ l.w) + l.b)
@@ -328,24 +330,27 @@ module Make
 
     let reset l = Mat.reset l.w
 
-    let mktag t l = l.w <- make_reverse l.w t
-
-    let mkpar l = [|l.w|]
-
-    let mkpri l = [|primal l.w|]
-
-    let mkadj l = [|adjval l.w|]
-
-    let update l u = l.w <- u.(0) |> primal'
-
     let get_parameters l = [|l.w|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal'
 
+    let mktag t l =
+      if l.trainable then l.w <- make_reverse l.w t
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
+
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
-      mkpri l |> Array.map copy_primal' |> update l';
+      Array.map primal (get_parameters l) |> Array.map copy_primal' |> set_parameters l';
       l'
 
     let run x l = Maths.(x *@ l.w)
@@ -423,44 +428,6 @@ module Make
       Mat.reset l.bh;
       Mat.reset l.by
 
-    let mktag t l =
-      l.whh <- make_reverse l.whh t;
-      l.wxh <- make_reverse l.wxh t;
-      l.why <- make_reverse l.why t;
-      l.bh  <- make_reverse l.bh t;
-      l.by  <- make_reverse l.by t
-
-    let mkpar l = [|
-      l.whh;
-      l.wxh;
-      l.why;
-      l.bh;
-      l.by;
-    |]
-
-    let mkpri l = [|
-      primal l.whh;
-      primal l.wxh;
-      primal l.why;
-      primal l.bh;
-      primal l.by;
-    |]
-
-    let mkadj l = [|
-      adjval l.whh;
-      adjval l.wxh;
-      adjval l.why;
-      adjval l.bh;
-      adjval l.by;
-    |]
-
-    let update l u =
-      l.whh <- u.(0) |> primal';
-      l.wxh <- u.(1) |> primal';
-      l.why <- u.(2) |> primal';
-      l.bh  <- u.(3) |> primal';
-      l.by  <- u.(4) |> primal'
-
     let get_parameters l = [|
       l.whh;
       l.wxh;
@@ -475,6 +442,25 @@ module Make
       l.why <- u.(2) |> primal';
       l.bh  <- u.(3) |> primal';
       l.by  <- u.(4) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.whh <- make_reverse l.whh t;
+        l.wxh <- make_reverse l.wxh t;
+        l.why <- make_reverse l.why t;
+        l.bh  <- make_reverse l.bh t;
+        l.by  <- make_reverse l.by t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.hiddens l.out_shape.(0) l.act l.init_typ l.trainable in
@@ -598,79 +584,6 @@ module Make
       Mat.reset l.bf;
       Mat.reset l.bo
 
-    let mktag t l =
-      l.wxi <- make_reverse l.wxi t;
-      l.whi <- make_reverse l.whi t;
-      l.wxc <- make_reverse l.wxc t;
-      l.whc <- make_reverse l.whc t;
-      l.wxf <- make_reverse l.wxf t;
-      l.whf <- make_reverse l.whf t;
-      l.wxo <- make_reverse l.wxo t;
-      l.who <- make_reverse l.who t;
-      l.bi  <- make_reverse l.bi t;
-      l.bc  <- make_reverse l.bc t;
-      l.bf  <- make_reverse l.bf t;
-      l.bo  <- make_reverse l.bo t
-
-    let mkpar l = [|
-      l.wxi;
-      l.whi;
-      l.wxc;
-      l.whc;
-      l.wxf;
-      l.whf;
-      l.wxo;
-      l.who;
-      l.bi;
-      l.bc;
-      l.bf;
-      l.bo;
-    |]
-
-    let mkpri l = [|
-      primal l.wxi;
-      primal l.whi;
-      primal l.wxc;
-      primal l.whc;
-      primal l.wxf;
-      primal l.whf;
-      primal l.wxo;
-      primal l.who;
-      primal l.bi;
-      primal l.bc;
-      primal l.bf;
-      primal l.bo;
-    |]
-
-    let mkadj l = [|
-      adjval l.wxi;
-      adjval l.whi;
-      adjval l.wxc;
-      adjval l.whc;
-      adjval l.wxf;
-      adjval l.whf;
-      adjval l.wxo;
-      adjval l.who;
-      adjval l.bi;
-      adjval l.bc;
-      adjval l.bf;
-      adjval l.bo;
-    |]
-
-    let update l u =
-      l.wxi <- u.(0)  |> primal';
-      l.whi <- u.(1)  |> primal';
-      l.wxc <- u.(2)  |> primal';
-      l.whc <- u.(3)  |> primal';
-      l.wxf <- u.(4)  |> primal';
-      l.whf <- u.(5)  |> primal';
-      l.wxo <- u.(6)  |> primal';
-      l.who <- u.(7)  |> primal';
-      l.bi  <- u.(8)  |> primal';
-      l.bc  <- u.(9)  |> primal';
-      l.bf  <- u.(10) |> primal';
-      l.bo  <- u.(11) |> primal'
-
     let get_parameters l = [|
       l.wxi;
       l.whi;
@@ -699,6 +612,32 @@ module Make
       l.bc  <- u.(9)  |> primal';
       l.bf  <- u.(10) |> primal';
       l.bo  <- u.(11) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.wxi <- make_reverse l.wxi t;
+        l.whi <- make_reverse l.whi t;
+        l.wxc <- make_reverse l.wxc t;
+        l.whc <- make_reverse l.whc t;
+        l.wxf <- make_reverse l.wxf t;
+        l.whf <- make_reverse l.whf t;
+        l.wxo <- make_reverse l.wxo t;
+        l.who <- make_reverse l.who t;
+        l.bi  <- make_reverse l.bi t;
+        l.bc  <- make_reverse l.bc t;
+        l.bf  <- make_reverse l.bf t;
+        l.bo  <- make_reverse l.bo t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
@@ -818,64 +757,6 @@ module Make
       Mat.reset l.br;
       Mat.reset l.bh
 
-    let mktag t l =
-      l.wxz <- make_reverse l.wxz t;
-      l.whz <- make_reverse l.whz t;
-      l.wxr <- make_reverse l.wxr t;
-      l.whr <- make_reverse l.whr t;
-      l.wxh <- make_reverse l.wxh t;
-      l.whh <- make_reverse l.whh t;
-      l.bz  <- make_reverse l.bz t;
-      l.br  <- make_reverse l.br t;
-      l.bh  <- make_reverse l.bh t
-
-    let mkpar l = [|
-      l.wxz;
-      l.whz;
-      l.wxr;
-      l.whr;
-      l.wxh;
-      l.whh;
-      l.bz;
-      l.br;
-      l.bh;
-    |]
-
-    let mkpri l = [|
-      primal l.wxz;
-      primal l.whz;
-      primal l.wxr;
-      primal l.whr;
-      primal l.wxh;
-      primal l.whh;
-      primal l.bz;
-      primal l.br;
-      primal l.bh;
-    |]
-
-    let mkadj l = [|
-      adjval l.wxz;
-      adjval l.whz;
-      adjval l.wxr;
-      adjval l.whr;
-      adjval l.wxh;
-      adjval l.whh;
-      adjval l.bz;
-      adjval l.br;
-      adjval l.bh;
-    |]
-
-    let update l u =
-      l.wxz <- u.(0) |> primal';
-      l.whz <- u.(1) |> primal';
-      l.wxr <- u.(2) |> primal';
-      l.whr <- u.(3) |> primal';
-      l.wxh <- u.(4) |> primal';
-      l.whh <- u.(5) |> primal';
-      l.bz  <- u.(6) |> primal';
-      l.br  <- u.(7) |> primal';
-      l.bh  <- u.(8) |> primal'
-
     let get_parameters l = [|
       l.wxz;
       l.whz;
@@ -898,6 +779,29 @@ module Make
       l.bz  <- u.(6) |> primal';
       l.br  <- u.(7) |> primal';
       l.bh  <- u.(8) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.wxz <- make_reverse l.wxz t;
+        l.whz <- make_reverse l.whz t;
+        l.wxr <- make_reverse l.wxr t;
+        l.whr <- make_reverse l.whr t;
+        l.wxh <- make_reverse l.wxh t;
+        l.whh <- make_reverse l.whh t;
+        l.bz  <- make_reverse l.bz t;
+        l.br  <- make_reverse l.br t;
+        l.bh  <- make_reverse l.bh t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
@@ -993,25 +897,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
@@ -1093,25 +999,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
@@ -1191,25 +1099,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
@@ -1291,29 +1201,31 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
+
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
-      mkpri l |> Array.map copy_primal' |> update l';
+      Array.map primal (get_parameters l) |> Array.map copy_primal' |> set_parameters l';
       l'
 
     let run x l = Maths.((conv2d ~padding:l.padding x l.w l.stride) + l.b)
@@ -1396,24 +1308,26 @@ module Make
       Arr.reset l.b
 
     let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
 
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
@@ -1496,25 +1410,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
@@ -1599,25 +1515,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
@@ -1707,25 +1625,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.rate l.init_typ l.trainable in
@@ -1811,25 +1731,27 @@ module Make
       Arr.reset l.w;
       Arr.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
+
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.padding l.kernel l.stride l.init_typ l.trainable in
@@ -1897,29 +1819,31 @@ module Make
       Mat.reset l.w;
       Mat.reset l.b
 
-    let mktag t l =
-      l.w <- make_reverse l.w t;
-      l.b <- make_reverse l.b t
-
-    let mkpar l = [|l.w; l.b|]
-
-    let mkpri l = [|primal l.w; primal l.b|]
-
-    let mkadj l = [|adjval l.w; adjval l.b|]
-
-    let update l u =
-      l.w <- u.(0) |> primal';
-      l.b <- u.(1) |> primal'
-
     let get_parameters l = [|l.w; l.b|]
 
     let set_parameters l u =
       l.w <- u.(0) |> primal';
       l.b <- u.(1) |> primal'
 
+    let mktag t l =
+      if l.trainable then (
+        l.w <- make_reverse l.w t;
+        l.b <- make_reverse l.b t
+      )
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = if l.trainable then Array.map primal (mkpar l) else [||]
+
+    let mkadj l = if l.trainable then Array.map adjval (mkpar l) else [||]
+
+    let update l u = if l.trainable then set_parameters l u else ()
+
     let copy l =
       let l' = create l.out_shape.(0) l.init_typ l.trainable in
-      mkpri l |> Array.map copy_primal' |> update l';
+      Array.map primal (get_parameters l) |> Array.map copy_primal' |> set_parameters l';
       l'
 
     let run x l =
@@ -2885,32 +2809,40 @@ module Make
       Arr.reset l.beta;
       Arr.reset l.gamma
 
-    let mktag t l =
-      l.beta <- make_reverse l.beta t;
-      l.gamma <- make_reverse l.gamma t
-
-    let mkpar l = [|l.beta; l.gamma|]
-
-    let mkpri l = [|primal l.beta; primal l.gamma|]
-
-    let mkadj l = [|adjval l.beta; adjval l.gamma|]
-
-    let update l u =
-      l.beta <- u.(0) |> primal';
-      l.gamma <- u.(1) |> primal'
+    let trainable_par l = [|l.beta; l.gamma|]
 
     let non_trainable_par l = [|l.mu; l.var|]
 
-    let update_non_trainable l u =
-      l.mu <- u.(0);
-      l.var <- u.(1)
+    let set_trainable_par l u =
+      l.beta <- u.(0) |> primal';
+      l.gamma <- u.(1) |> primal'
+
+    let set_non_trainable_par l u =
+      l.mu <- u.(0) |> primal';
+      l.var <- u.(1) |> primal'
 
     let set_parameters l u =
-      update l [|u.(0); u.(1)|];
-      update_non_trainable l [|u.(2); u.(3)|]
+      set_trainable_par l [|u.(0); u.(1)|];
+      set_non_trainable_par l [|u.(2); u.(3)|]
 
     let get_parameters l =
-      Owl_utils.Array.(mkpar l @ non_trainable_par l)
+      Owl_utils.Array.(trainable_par l @ non_trainable_par l)
+
+    let mktag t l =
+      if l.trainable then (
+        l.beta <- make_reverse l.beta t;
+        l.gamma <- make_reverse l.gamma t
+      )
+
+    let mkpar l =
+      if l.trainable then trainable_par l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_trainable_par l u
 
     let copy l =
       let l' = create ~training:l.training ~decay:(unpack_flt l.decay) ~mu:(unpack_arr l.mu) ~var:(unpack_arr l.var) l.axis l.trainable in
@@ -3120,19 +3052,22 @@ module Make
 
     let reset l = Mat.reset l.w
 
-    let mktag t l = l.w <- make_reverse l.w t
-
-    let mkpar l = [|l.w|]
-
-    let mkpri l = [|primal l.w|]
-
-    let mkadj l = [|adjval l.w|]
-
-    let update l u = l.w <- u.(0) |> primal'
-
     let get_parameters l = [|l.w|]
 
     let set_parameters l u = l.w <- u.(0) |> primal'
+
+    let mktag t l =
+      if l.trainable then l.w <- make_reverse l.w t
+
+    let mkpar l =
+      if l.trainable then get_parameters l
+      else [||]
+
+    let mkpri l = Array.map primal (mkpar l)
+
+    let mkadj l = Array.map adjval (mkpar l)
+
+    let update l u = if l.trainable then set_parameters l u
 
     let copy l =
       let l' = create l.in_dim l.out_shape.(1) l.init_typ l.trainable in
@@ -3279,9 +3214,9 @@ module Make
     | Conv1D l          -> Conv1D.connect out_shapes.(0) l
     | Conv2D l          -> Conv2D.connect out_shapes.(0) l
     | Conv3D l          -> Conv3D.connect out_shapes.(0) l
-    | DilatedConv1D l -> DilatedConv1D.connect out_shapes.(0) l
-    | DilatedConv2D l -> DilatedConv2D.connect out_shapes.(0) l
-    | DilatedConv3D l -> DilatedConv3D.connect out_shapes.(0) l
+    | DilatedConv1D l   -> DilatedConv1D.connect out_shapes.(0) l
+    | DilatedConv2D l   -> DilatedConv2D.connect out_shapes.(0) l
+    | DilatedConv3D l   -> DilatedConv3D.connect out_shapes.(0) l
     | TransposeConv1D l -> TransposeConv1D.connect out_shapes.(0) l
     | TransposeConv2D l -> TransposeConv2D.connect out_shapes.(0) l
     | TransposeConv3D l -> TransposeConv3D.connect out_shapes.(0) l
@@ -3398,124 +3333,109 @@ module Make
     | _                 -> ()
 
 
-  let mktag t l =
-    if is_trainable l then
-      match l with
-      | Linear l          -> Linear.mktag t l
-      | LinearNoBias l    -> LinearNoBias.mktag t l
-      | Embedding l       -> Embedding.mktag t l
-      | LSTM l            -> LSTM.mktag t l
-      | GRU l             -> GRU.mktag t l
-      | Recurrent l       -> Recurrent.mktag t l
-      | Conv1D l          -> Conv1D.mktag t l
-      | Conv2D l          -> Conv2D.mktag t l
-      | Conv3D l          -> Conv3D.mktag t l
-      | DilatedConv1D l   -> DilatedConv1D.mktag t l
-      | DilatedConv2D l   -> DilatedConv2D.mktag t l
-      | DilatedConv3D l   -> DilatedConv3D.mktag t l
-      | TransposeConv1D l -> TransposeConv1D.mktag t l
-      | TransposeConv2D l -> TransposeConv2D.mktag t l
-      | TransposeConv3D l -> TransposeConv3D.mktag t l
-      | FullyConnected l  -> FullyConnected.mktag t l
-      | Normalisation l   -> Normalisation.mktag t l
-      | _                 -> () (* activation, etc. *)
-    else ()
+  let mktag t l = match l with
+    | Linear l          -> Linear.mktag t l
+    | LinearNoBias l    -> LinearNoBias.mktag t l
+    | Embedding l       -> Embedding.mktag t l
+    | LSTM l            -> LSTM.mktag t l
+    | GRU l             -> GRU.mktag t l
+    | Recurrent l       -> Recurrent.mktag t l
+    | Conv1D l          -> Conv1D.mktag t l
+    | Conv2D l          -> Conv2D.mktag t l
+    | Conv3D l          -> Conv3D.mktag t l
+    | DilatedConv1D l   -> DilatedConv1D.mktag t l
+    | DilatedConv2D l   -> DilatedConv2D.mktag t l
+    | DilatedConv3D l   -> DilatedConv3D.mktag t l
+    | TransposeConv1D l -> TransposeConv1D.mktag t l
+    | TransposeConv2D l -> TransposeConv2D.mktag t l
+    | TransposeConv3D l -> TransposeConv3D.mktag t l
+    | FullyConnected l  -> FullyConnected.mktag t l
+    | Normalisation l   -> Normalisation.mktag t l
+    | _                 -> () (* activation, etc. *)
 
 
-  let mkpar l =
-    if is_trainable l then
-      match l with
-      | Linear l          -> Linear.mkpar l
-      | LinearNoBias l    -> LinearNoBias.mkpar l
-      | Embedding l       -> Embedding.mkpar l
-      | LSTM l            -> LSTM.mkpar l
-      | GRU l             -> GRU.mkpar l
-      | Recurrent l       -> Recurrent.mkpar l
-      | Conv1D l          -> Conv1D.mkpar l
-      | Conv2D l          -> Conv2D.mkpar l
-      | Conv3D l          -> Conv3D.mkpar l
-      | DilatedConv1D l   -> DilatedConv1D.mkpar l
-      | DilatedConv2D l   -> DilatedConv2D.mkpar l
-      | DilatedConv3D l   -> DilatedConv3D.mkpar l
-      | TransposeConv1D l -> TransposeConv1D.mkpar l
-      | TransposeConv2D l -> TransposeConv2D.mkpar l
-      | TransposeConv3D l -> TransposeConv3D.mkpar l
-      | FullyConnected l  -> FullyConnected.mkpar l
-      | Normalisation l   -> Normalisation.mkpar l
-      | _                 -> [||] (* activation, etc. *)
-    else [||]
+  let mkpar = function
+    | Linear l          -> Linear.mkpar l
+    | LinearNoBias l    -> LinearNoBias.mkpar l
+    | Embedding l       -> Embedding.mkpar l
+    | LSTM l            -> LSTM.mkpar l
+    | GRU l             -> GRU.mkpar l
+    | Recurrent l       -> Recurrent.mkpar l
+    | Conv1D l          -> Conv1D.mkpar l
+    | Conv2D l          -> Conv2D.mkpar l
+    | Conv3D l          -> Conv3D.mkpar l
+    | DilatedConv1D l   -> DilatedConv1D.mkpar l
+    | DilatedConv2D l   -> DilatedConv2D.mkpar l
+    | DilatedConv3D l   -> DilatedConv3D.mkpar l
+    | TransposeConv1D l -> TransposeConv1D.mkpar l
+    | TransposeConv2D l -> TransposeConv2D.mkpar l
+    | TransposeConv3D l -> TransposeConv3D.mkpar l
+    | FullyConnected l  -> FullyConnected.mkpar l
+    | Normalisation l   -> Normalisation.mkpar l
+    | _                 -> [||] (* activation, etc. *)
 
 
-  let mkpri l =
-    if is_trainable l then
-      match l with
-      | Linear l          -> Linear.mkpri l
-      | LinearNoBias l    -> LinearNoBias.mkpri l
-      | Embedding l       -> Embedding.mkpri l
-      | LSTM l            -> LSTM.mkpri l
-      | GRU l             -> GRU.mkpri l
-      | Recurrent l       -> Recurrent.mkpri l
-      | Conv1D l          -> Conv1D.mkpri l
-      | Conv2D l          -> Conv2D.mkpri l
-      | Conv3D l          -> Conv3D.mkpri l
-      | DilatedConv1D l   -> DilatedConv1D.mkpri l
-      | DilatedConv2D l   -> DilatedConv2D.mkpri l
-      | DilatedConv3D l   -> DilatedConv3D.mkpri l
-      | TransposeConv1D l -> TransposeConv1D.mkpri l
-      | TransposeConv2D l -> TransposeConv2D.mkpri l
-      | TransposeConv3D l -> TransposeConv3D.mkpri l
-      | FullyConnected l  -> FullyConnected.mkpri l
-      | Normalisation l   -> Normalisation.mkpri l
-      | _                 -> [||] (* activation, etc. *)
-    else [||]
+  let mkpri = function
+    | Linear l          -> Linear.mkpri l
+    | LinearNoBias l    -> LinearNoBias.mkpri l
+    | Embedding l       -> Embedding.mkpri l
+    | LSTM l            -> LSTM.mkpri l
+    | GRU l             -> GRU.mkpri l
+    | Recurrent l       -> Recurrent.mkpri l
+    | Conv1D l          -> Conv1D.mkpri l
+    | Conv2D l          -> Conv2D.mkpri l
+    | Conv3D l          -> Conv3D.mkpri l
+    | DilatedConv1D l   -> DilatedConv1D.mkpri l
+    | DilatedConv2D l   -> DilatedConv2D.mkpri l
+    | DilatedConv3D l   -> DilatedConv3D.mkpri l
+    | TransposeConv1D l -> TransposeConv1D.mkpri l
+    | TransposeConv2D l -> TransposeConv2D.mkpri l
+    | TransposeConv3D l -> TransposeConv3D.mkpri l
+    | FullyConnected l  -> FullyConnected.mkpri l
+    | Normalisation l   -> Normalisation.mkpri l
+    | _                 -> [||] (* activation, etc. *)
 
 
-  let mkadj l =
-    if is_trainable l then
-      match l with
-      | Linear l          -> Linear.mkadj l
-      | LinearNoBias l    -> LinearNoBias.mkadj l
-      | Embedding l       -> Embedding.mkadj l
-      | LSTM l            -> LSTM.mkadj l
-      | GRU l             -> GRU.mkadj l
-      | Recurrent l       -> Recurrent.mkadj l
-      | Conv1D l          -> Conv1D.mkadj l
-      | Conv2D l          -> Conv2D.mkadj l
-      | Conv3D l          -> Conv3D.mkadj l
-      | DilatedConv1D l   -> DilatedConv1D.mkadj l
-      | DilatedConv2D l   -> DilatedConv2D.mkadj l
-      | DilatedConv3D l   -> DilatedConv3D.mkadj l
-      | TransposeConv1D l -> TransposeConv1D.mkadj l
-      | TransposeConv2D l -> TransposeConv2D.mkadj l
-      | TransposeConv3D l -> TransposeConv3D.mkadj l
-      | FullyConnected l  -> FullyConnected.mkadj l
-      | Normalisation l   -> Normalisation.mkadj l
-      | _                 -> [||] (* activation, etc. *)
-    else [||]
+  let mkadj = function
+    | Linear l          -> Linear.mkadj l
+    | LinearNoBias l    -> LinearNoBias.mkadj l
+    | Embedding l       -> Embedding.mkadj l
+    | LSTM l            -> LSTM.mkadj l
+    | GRU l             -> GRU.mkadj l
+    | Recurrent l       -> Recurrent.mkadj l
+    | Conv1D l          -> Conv1D.mkadj l
+    | Conv2D l          -> Conv2D.mkadj l
+    | Conv3D l          -> Conv3D.mkadj l
+    | DilatedConv1D l   -> DilatedConv1D.mkadj l
+    | DilatedConv2D l   -> DilatedConv2D.mkadj l
+    | DilatedConv3D l   -> DilatedConv3D.mkadj l
+    | TransposeConv1D l -> TransposeConv1D.mkadj l
+    | TransposeConv2D l -> TransposeConv2D.mkadj l
+    | TransposeConv3D l -> TransposeConv3D.mkadj l
+    | FullyConnected l  -> FullyConnected.mkadj l
+    | Normalisation l   -> Normalisation.mkadj l
+    | _                 -> [||] (* activation, etc. *)
 
 
-  let update l u =
-    if is_trainable l then
-      match l with
-      | Linear l          -> Linear.update l u
-      | LinearNoBias l    -> LinearNoBias.update l u
-      | Embedding l       -> Embedding.update l u
-      | LSTM l            -> LSTM.update l u
-      | GRU l             -> GRU.update l u
-      | Recurrent l       -> Recurrent.update l u
-      | Conv1D l          -> Conv1D.update l u
-      | Conv2D l          -> Conv2D.update l u
-      | Conv3D l          -> Conv3D.update l u
-      | DilatedConv1D l   -> DilatedConv1D.update l u
-      | DilatedConv2D l   -> DilatedConv2D.update l u
-      | DilatedConv3D l   -> DilatedConv3D.update l u
-      | TransposeConv1D l -> TransposeConv1D.update l u
-      | TransposeConv2D l -> TransposeConv2D.update l u
-      | TransposeConv3D l -> TransposeConv3D.update l u
-      | FullyConnected l  -> FullyConnected.update l u
-      | Normalisation l   -> Normalisation.update l u
-      | _                 -> () (* activation, etc. *)
-    else ()
+  let update l u = match l with
+    | Linear l          -> Linear.update l u
+    | LinearNoBias l    -> LinearNoBias.update l u
+    | Embedding l       -> Embedding.update l u
+    | LSTM l            -> LSTM.update l u
+    | GRU l             -> GRU.update l u
+    | Recurrent l       -> Recurrent.update l u
+    | Conv1D l          -> Conv1D.update l u
+    | Conv2D l          -> Conv2D.update l u
+    | Conv3D l          -> Conv3D.update l u
+    | DilatedConv1D l   -> DilatedConv1D.update l u
+    | DilatedConv2D l   -> DilatedConv2D.update l u
+    | DilatedConv3D l   -> DilatedConv3D.update l u
+    | TransposeConv1D l -> TransposeConv1D.update l u
+    | TransposeConv2D l -> TransposeConv2D.update l u
+    | TransposeConv3D l -> TransposeConv3D.update l u
+    | FullyConnected l  -> FullyConnected.update l u
+    | Normalisation l   -> Normalisation.update l u
+    | _                 -> () (* activation, etc. *)
 
 
   let get_parameters = function

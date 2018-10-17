@@ -74,7 +74,7 @@ module type Sig = sig
   val const_elt : string -> A.elt -> elt
   (** TODO *)
 
-  val make_empty_block : ?id:int -> int -> attr Owl_graph.node -> block
+  val make_empty_block : ?id:int -> int -> block
   (** TODO *)
 
   val make_value_block : ?id:int -> value -> attr Owl_graph.node -> block

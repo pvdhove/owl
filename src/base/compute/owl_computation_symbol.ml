@@ -290,12 +290,12 @@ module Make
   let _global_id = ref 0
 
 
-  let make_empty_block ?id size node =
+  let make_empty_block ?id size =
     let id = match id with
       | Some id -> id
       | None -> _global_id := !_global_id + 1; !_global_id in
     let memory = arr_to_value (A.empty [|size|]) in (* or zeros? *)
-    { size; active = Some node; memory; nodes = [ node ]; id; }
+    { size; active = None; memory; nodes = []; id; }
 
 
   let make_value_block ?id memory node =

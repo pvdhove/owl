@@ -37,8 +37,8 @@ module Make
     Owl_log.debug "eval %s ..." (node_to_str x);
 
     if is_valid x = false then
-      let _ = try
-        match (get_operator x) with
+      let () = try
+        match get_operator x with
         | Noop                                          -> _eval_map_00 x (fun x -> x.(0))
         | Var                                           -> check_assigned x
         | Const                                         -> check_assigned x

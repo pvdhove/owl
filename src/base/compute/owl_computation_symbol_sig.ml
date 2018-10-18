@@ -74,13 +74,13 @@ module type Sig = sig
   val const_elt : string -> A.elt -> elt
   (** TODO *)
 
+  val block_id : unit -> int
+  (** ``block_id ()`` returns an unused block id. *)
+
   val make_empty_block : ?id:int -> int -> block
   (** TODO *)
 
   val make_value_block : ?id:int -> value -> attr Owl_graph.node -> block
-  (** TODO *)
-
-  val get_value_block : block -> value
   (** TODO *)
 
   val get_block : attr Owl_graph.node -> block array option
@@ -89,10 +89,7 @@ module type Sig = sig
   val get_block_exn : attr Owl_graph.node -> block array
   (** TODO *)
 
-  val set_block : attr Owl_graph.node -> block array -> unit
-  (** TODO *)
-
-  val add_node_block : block -> attr Owl_graph.node -> unit
+  val add_node_to_block : attr Owl_graph.node -> block -> unit
   (** TODO *)
 
   val get_active_node : block -> (attr Owl_graph.node) option
@@ -101,7 +98,7 @@ module type Sig = sig
   val set_active_node : block -> attr Owl_graph.node -> unit
   (** TODO *)
 
-  val block_id : attr Owl_graph.node -> int
+  val get_block_id : attr Owl_graph.node -> int
   (** TODO *)
 
   val set_value : attr Owl_graph.node -> value array -> unit

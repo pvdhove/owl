@@ -287,25 +287,33 @@ module Make
   let elt_to_node = function Elt x -> x
 
 
-  let _global_id = ref 0
+  let _global_block_id = ref 0
+
+
+  let block_id () =
+    _global_block_id := !_global_block_id + 1;
+    !_global_block_id
 
 
   let make_empty_block ?id size =
     let id = match id with
       | Some id -> id
-      | None -> _global_id := !_global_id + 1; !_global_id in
-    let memory = arr_to_value (A.empty [|size|]) in (* or zeros? *)
+      | None -> block_id () in
+    let memory = arr_to_value (A.empty [|size|]) in
     { size; active = None; memory; nodes = []; id; }
 
 
-  let make_value_block ?id memory node =
+  let make_value_block ?id memory x =
     let id = match id with
       | Some id -> id
-      | None -> _global_id := !_global_id + 1; !_global_id in
+      | None    -> block_id () in
     let size = match memory with
       | EltVal _ -> 1
       | ArrVal x -> A.numel x in
-    { size; active = Some node; memory; nodes = [ node ]; id; }
+    let block = { size; active = Some x; memory; nodes = [ x ]; id; } in
+    (attr x).value <- [| block.memory |];
+    (attr x).block <- Some [| block |];
+    block
 
 
   let make_node ?name ?value ?shape ?freeze ?reuse ?state op =
@@ -366,10 +374,7 @@ module Make
   let get_nodes_block b = b.nodes
 
 
-  let get_value_block b = b.memory
-
-
-  let set_value_block b v = b.memory <- v
+  let _get_value_block b = b.memory
 
 
   let get_block x = (attr x).block
@@ -380,11 +385,18 @@ module Make
     | None   -> failwith "Symbol:get_block_exn: block not assigned"
 
 
-  let set_block x b = (attr x).block <- Some b
+  let _set_block x b = (attr x).block <- Some b
 
 
-  let add_node_block b x =
-    b.nodes <- x :: b.nodes
+  let add_node_to_block x block =
+    let dst_shp = node_shape x in
+    let dst_numel = node_numel x in
+    let src_val = value_to_arr (_get_value_block block) in
+    let dst_val = arr_to_value (A.reshape (A.sub_left src_val 0 dst_numel) dst_shp) in
+    block.nodes <- x :: block.nodes;
+    _set_block x [| block |];
+    (* TODO: ugly, clean this *)
+    (attr x).value <- [| dst_val |]
 
 
   let get_active_node b = b.active
@@ -393,7 +405,7 @@ module Make
   let set_active_node b x = b.active <- Some x
 
 
-  let block_id x = match get_block x with
+  let get_block_id x = match get_block x with
     | Some bs -> bs.(0).id
     | None    -> -1
 
@@ -406,13 +418,11 @@ module Make
            let xv = value_to_arr (attr x).value.(0) in
            A.copy_ ~out:xv vv
         | None    -> (
-          set_block x [| make_value_block v.(0) x |];
-          (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
+          make_value_block v.(0) x |> ignore
         )
        )
     | EltVal _ ->
-       set_block x [| make_value_block v.(0) x |];
-       (attr x).value <- [| get_value_block (get_block_exn x).(0) |]
+       make_value_block v.(0) x |> ignore
 
 
   let get_value x = (attr x).value

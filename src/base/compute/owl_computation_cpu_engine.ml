@@ -18,7 +18,7 @@ module Make_Nested
 
   (* module aliases *)
 
-  module CG_Init = Owl_computation_cpu_init2.Make (Graph)
+  module CG_Init = Owl_computation_cpu_init.Make (Graph)
 
   module CG_Eval = Owl_computation_cpu_eval.Make (Graph)
 

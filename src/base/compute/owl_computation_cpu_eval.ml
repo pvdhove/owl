@@ -34,7 +34,7 @@ module Make
   (* core evaluation function *)
 
   let rec _eval_term x =
-    Owl_log.debug "eval %s..." (node_to_str x);
+    Owl_log.debug "eval %s ..." (node_to_str x);
 
     if is_valid x = false then
       let _ = try
@@ -245,8 +245,6 @@ module Make
     ) (parents x)
     in
     let out = f inputs in
-    (* Printf.printf "%s\n" (node_to_str x);
-     * A.print ~max_row:10 ~max_col:10 out; *)
     set_value x [|arr_to_value out|]
 
 
@@ -258,9 +256,7 @@ module Make
     ) (parents x)
     in
     let out = value_to_arr (get_value x).(0) in
-    f ~out inputs(* ;
-     * Printf.printf "%s\n" (node_to_str x);
-     * A.print ~max_row:10 ~max_col:10 out *)
+    f ~out inputs
 
 
   (* [f] is inpure, for [elt array -> arr] *)
@@ -271,9 +267,7 @@ module Make
     ) (parents x)
     in
     let out = value_to_arr (get_value x).(0) in
-    f ~out inputs(* ;
-     * Printf.printf "%s\n" (node_to_str x);
-     * A.print ~max_row:10 ~max_col:10 out *)
+    f ~out inputs
 
 
   (* [f] is pure, for [elt array -> elt] *)
@@ -296,9 +290,7 @@ module Make
     let a = value_to_arr (get_value x_parent_0).(0) in
     let b = value_to_elt (get_value x_parent_1).(0) in
     let out = value_to_arr (get_value x).(0) in
-    f ~out a b(* ;
-     * Printf.printf "%s\n" (node_to_str x);
-     * A.print ~max_row:10 ~max_col:10 out *)
+    f ~out a b
 
 
   (* [f] is impure, for [elt -> arr -> arr] *)
@@ -310,9 +302,7 @@ module Make
     let a = value_to_elt (get_value x_parent_0).(0) in
     let b = value_to_arr (get_value x_parent_1).(0) in
     let out = value_to_arr (get_value x).(0) in
-    f ~out a b(* ;
-     * Printf.printf "%s\n" (node_to_str x);
-     * A.print ~max_row:10 ~max_col:10 out *)
+    f ~out a b
 
 
   (* [f] is pure, for [arr -> elt] *)
@@ -330,9 +320,7 @@ module Make
     let arr_args = Owl_utils_array.filter is_arr x_parents |> Array.map (fun v -> (get_value v).(0) |> value_to_arr) in
     let elt_args = Owl_utils_array.filter is_elt x_parents |> Array.map (fun v -> (get_value v).(0) |> value_to_elt) in
     let out = value_to_arr (get_value x).(0) in
-    f ~out arr_args elt_args(* ;
-     * Printf.printf "%s\n" (node_to_str x);
-     * A.print ~max_row:10 ~max_col:10 out *)
+    f ~out arr_args elt_args
 
 
   (* [f] is pure, for [arr -> arr] *)

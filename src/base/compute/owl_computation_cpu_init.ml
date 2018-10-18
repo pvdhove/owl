@@ -40,19 +40,15 @@ module Make
     | _               -> false
 
 
-  (* written to be as safe as possible, but can probably set to true many more
-   * functions.
+  (* written to be as safe as possible, but can probably set to true more
+   * operations.
    * Careful: Broadcasting operations can not overwrite parents. *)
   let can_overwrite_parents x = match get_operator x with
-    | Empty _shape                                   -> false
-    | Zeros _shape                                   -> false
-    | Ones _shape                                    -> false
     | Create _shape                                  -> false
     | Sequential _shape                              -> false
     | Uniform _shape                                 -> false
     | Gaussian _shape                                -> false
     | Bernoulli _shape                               -> false
-    | Init (_shape, _f)                              -> false
     | GetSlice _slice                                -> false
     | Tile _repeats                                  -> false
     | Repeat _repeats                                -> false
@@ -147,15 +143,20 @@ module Make
     let id_to_node = Hashtbl.create 256 in
 
     let is_initialised x =
+      (* Already has a block or is already associated to a block id during the
+       * algorithm *)
       is_assigned x || Hashtbl.mem node_to_block (id x)
     in
 
+    (* Notifies a node that it has been used by one of its children.
+     * If no more children have to use the node, assumes that the memory of the
+     * node can be reused by another node. *)
     let update_parent p =
       let id_p = id p in
       if not (is_assigned p) && Hashtbl.mem refs id_p then (
         let num = Hashtbl.find refs id_p in
         assert (num > 0);
-        if num - 1 = 0 then (
+        if num - 1 = 0 then (* can be reused *) (
           Hashtbl.remove refs id_p;
           let block_id = Hashtbl.find node_to_block id_p in
           let block_size = Hashtbl.find block_to_size block_id in
@@ -165,7 +166,7 @@ module Make
       )
     in
 
-    (* heuristic: return the smallest block that is larger than numel.
+    (* Heuristic: return the smallest block that is larger than numel.
      * If no such block exists, return the biggest one and make it bigger. *)
 
     (* let best_block_to_reuse numel =
@@ -201,6 +202,7 @@ module Make
      *   else None
      * in *)
 
+    (* Links node [x] to a new block *)
     let allocate_new x =
       let numel_x = node_numel x in
       let b_id = block_id () in
@@ -208,6 +210,8 @@ module Make
       Hashtbl.add block_to_size b_id numel_x
     in
 
+    (* Links the node [x] to the best reusable block if such a block exists.
+     * Otherwise, links [x] to a new block. *)
     let allocate x =
       let numel_x = node_numel x in
       let block_id_to_reuse = best_block_to_reuse numel_x in
@@ -231,19 +235,21 @@ module Make
         let pre_par, post_par = split_parents x in
         Array.iter update_parent pre_par;
         if is_reusable x && node_numel x <> 1 then (
-          (* a node that cannot be reused cannot reuse either *)
           Hashtbl.add refs (id x) (refnum x);
           allocate x
         )
         else (
+          (* a node that cannot be reused cannot reuse either *)
           allocate_new x
         );
         Array.iter update_parent post_par;
       )
     in
+    (* links all the nodes to a block id and all the blocks to a size *)
     Array.iter init nodes;
 
     let id_to_block = Hashtbl.create 256 in
+    (* Creates the blocks and initialises the relevant attributes of the nodes *)
     Hashtbl.iter
       (fun x_id b_id ->
         let x = Hashtbl.find id_to_node x_id in
@@ -258,6 +264,7 @@ module Make
           add_node_to_block x block
         )
       ) node_to_block
+
 
 end
 

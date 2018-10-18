@@ -196,16 +196,8 @@ module Make
         Some b_id
       )
     in
-    (* let best_block_to_reuse numel =
-     *   if Hashtbl.mem reusable numel then (
-     *     let b_id = Hashtbl.find reusable numel in
-     *     Hashtbl.remove reusable numel;
-     *     Some b_id
-     *   )
-     *   else None
-     * in *)
 
-    (* Links node [x] to a new block *)
+    (* Links node [x] to a new block. *)
     let allocate_new x =
       let numel_x = node_numel x in
       let b_id = block_id () in
@@ -248,8 +240,8 @@ module Make
     (* links all the nodes to a block id and all the blocks to a size *)
     Array.iter init nodes;
 
-    let id_to_block = Hashtbl.create 256 in
     (* Creates the blocks and initialises the relevant attributes of the nodes *)
+    let id_to_block = Hashtbl.create 256 in
     Hashtbl.iter
       (fun x_id b_id ->
         let x = Hashtbl.find id_to_node x_id in

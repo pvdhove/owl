@@ -295,14 +295,17 @@ module Make
     !_global_block_id
 
 
+  (* Meant for reusable nodes. *)
   let make_empty_block ?id size =
     let id = match id with
       | Some id -> id
-      | None -> block_id () in
+      | None    -> block_id () in
     let memory = arr_to_value (A.empty [|size|]) in
     { size; active = None; memory; nodes = []; id; }
 
 
+  (* This is meant for nodes that are not reusable: memory is not reshaped. *)
+  (* TODO: Enforce this behaviour? *)
   let make_value_block ?id memory x =
     let id = match id with
       | Some id -> id
@@ -311,7 +314,7 @@ module Make
       | EltVal _ -> 1
       | ArrVal x -> A.numel x in
     let block = { size; active = Some x; memory; nodes = [ x ]; id; } in
-    (attr x).value <- [| block.memory |];
+    (attr x).value <- [| memory |];
     (attr x).block <- Some [| block |];
     block
 
@@ -392,10 +395,10 @@ module Make
     let dst_shp = node_shape x in
     let dst_numel = node_numel x in
     let src_val = value_to_arr (_get_value_block block) in
+    (* allocates the first [dst_numel] elements for the memory of the node *)
     let dst_val = arr_to_value (A.reshape (A.sub_left src_val 0 dst_numel) dst_shp) in
     block.nodes <- x :: block.nodes;
     _set_block x [| block |];
-    (* TODO: ugly, clean this *)
     (attr x).value <- [| dst_val |]
 
 

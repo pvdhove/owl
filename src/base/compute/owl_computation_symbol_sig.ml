@@ -78,28 +78,34 @@ module type Sig = sig
   (** ``block_id ()`` returns an unused block id. *)
 
   val make_empty_block : ?id:int -> int -> block
-  (** TODO *)
+  (** ``make_empty_block s`` returns an empty block of memory of size ``s``. *)
 
   val make_value_block : ?id:int -> value -> attr Owl_graph.node -> block
-  (** TODO *)
-
-  val get_block : attr Owl_graph.node -> block array option
-  (** TODO *)
+  (**
+  ``make_value_block value node`` returns a block of memory initialised with
+  ``value`` and links the new block to ``node``.
+   *)
 
   val get_block_exn : attr Owl_graph.node -> block array
-  (** TODO *)
+  (**
+  ``get_block_exn node`` returns the memory block allocated to ``node``.
+  If no block is allocated, throws an exception.
+   *)
 
   val add_node_to_block : attr Owl_graph.node -> block -> unit
-  (** TODO *)
+  (**
+  Link a node to a reusable block and initialises its memory on the memory of
+  the block.
+   *)
 
   val get_active_node : block -> (attr Owl_graph.node) option
-  (** TODO *)
+  (** Return the node that is currently using the memory of the block. *)
 
   val set_active_node : block -> attr Owl_graph.node -> unit
-  (** TODO *)
+  (** Update the node currently using the block of memory. *)
 
   val get_block_id : attr Owl_graph.node -> int
-  (** TODO *)
+  (** Return the id of the block. *)
 
   val set_value : attr Owl_graph.node -> value array -> unit
   (** TODO *)
@@ -123,6 +129,10 @@ module type Sig = sig
   (** TODO *)
 
   val get_shared_nodes : attr Owl_graph.node -> (attr Owl_graph.node) array
+  (**
+  ``get_shared_nodes node`` Return the nodes sharing the same block of
+  memory as ``node``.
+   *)
 
   val is_var : attr Owl_graph.node -> bool
   (** TODO *)
@@ -137,10 +147,16 @@ module type Sig = sig
   (** TODO *)
 
   val is_assigned : attr Owl_graph.node -> bool
-  (** TODO *)
+  (**
+  ``is_assigned node`` checks if a block of memory has been assigned to
+  ``node``.
+   *)
 
   val check_assigned : attr Owl_graph.node -> unit
-  (** TODO *)
+  (**
+  ``check_assigned node`` throws an exception if ``node`` has not been
+  assigned to a block.
+   *)
 
   val is_valid : attr Owl_graph.node -> bool
   (** TODO *)

@@ -51,6 +51,14 @@ module Make
       Printf.sprintf "s:%s" (shape_to_str shape)
 
 
+  (* TODO: more visually distinct colours. *)
+  let _dot_color b_id =
+    let h = float ((b_id * 287) mod 360) /. 360. in
+    let s = 0.4 in
+    let v = 1. in
+    Printf.sprintf "%.3f %.3f %.3f" h s v
+
+
   let graph_to_dot graph =
     let edge_s = fold_in_edges (fun a u v ->
         Printf.sprintf "%s%i -> %i;\n" a (id u) (id v)
@@ -59,8 +67,12 @@ module Make
     let node_s = fold_ancestors (fun a n ->
       let svs = shape_or_value n in
       let b_id = get_block_id n in
-      Printf.sprintf "%s%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s; b:%i }\" ];\n"
-        a (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id
+      let col = _dot_color b_id in
+      Printf.sprintf "%s%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s; b:%i }\""
+        a (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id ^
+        (if is_reusable n && b_id <> -1 then
+           Printf.sprintf "style=filled fillcolor=\"%s\"" col else "") ^
+          "];\n"
     ) "" graph.output
     in
     Printf.sprintf "digraph CG {\nnode [shape=record];\n%s%s}" edge_s node_s

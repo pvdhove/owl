@@ -78,7 +78,6 @@ module Make
     | EltGreater                                     -> false (* Broadcasting *)
     | EltLessEqual                                   -> false (* Broadcasting *)
     | EltGreaterEqual                                -> false (* Broadcasting *)
-    | AddScalar                                      -> false
     | Conv1d (_padding, _stride)                     -> false
     | Conv2d (_padding, _stride)                     -> false
     | Conv3d (_padding, _stride)                     -> false
@@ -167,7 +166,8 @@ module Make
     in
 
     (* Heuristic: return the smallest block that is larger than numel.
-     * If no such block exists, return the biggest one and make it bigger. *)
+     * If no such block exists, return the biggest one and make it bigger.
+     * TODO: make it O(log). *)
 
     (* let best_block_to_reuse numel =
      *   if IntMap.is_empty !reusable then None

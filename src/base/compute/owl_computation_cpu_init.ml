@@ -142,9 +142,9 @@ module Make
     (* hashtable associating to each node id the corresponding node *)
     let id_to_node = Hashtbl.create 256 in
 
+    (* already has a block or is already associated to a block id during the
+     * execution of the algorithm *)
     let is_initialised x =
-      (* Already has a block or is already associated to a block id during the
-       * algorithm *)
       is_assigned x || Hashtbl.mem node_to_block (id x)
     in
 
@@ -189,6 +189,9 @@ module Make
       if !best <= 1 then None
       else (
         let b_id = Hashtbl.find reusable !best in
+        if !best < numel then (
+          Hashtbl.replace block_to_size b_id numel
+        );
         Hashtbl.remove reusable !best;
         Some b_id
       )
@@ -217,10 +220,7 @@ module Make
       let block_id_to_reuse = best_block_to_reuse numel_x in
       match block_id_to_reuse with
       | Some b_id ->
-         Hashtbl.add node_to_block (id x) b_id;
-         let block_size = Hashtbl.find block_to_size b_id in
-         if block_size < numel_x then
-           Hashtbl.replace block_to_size b_id numel_x
+         Hashtbl.add node_to_block (id x) b_id
       | None ->
          allocate_new x
     in

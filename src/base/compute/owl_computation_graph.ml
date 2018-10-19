@@ -51,9 +51,17 @@ module Make
       Printf.sprintf "s:%s" (shape_to_str shape)
 
 
-  (* TODO: more visually distinct colours. *)
-  let _dot_color b_id =
-    let h = float ((b_id * 287) mod 360) /. 360. in
+  let _colour = ref 0
+  let block_to_col = Hashtbl.create 15
+  let _dot_colour b_id =
+    let h =
+      if Hashtbl.mem block_to_col b_id then Hashtbl.find block_to_col b_id
+      else (
+        _colour := !_colour + 29;
+        Hashtbl.add block_to_col b_id !_colour;
+        !_colour
+      ) in
+    let h = float (h mod 360) /. 360. in
     let s = 0.4 in
     let v = 1. in
     Printf.sprintf "%.3f %.3f %.3f" h s v
@@ -67,11 +75,12 @@ module Make
     let node_s = fold_ancestors (fun a n ->
       let svs = shape_or_value n in
       let b_id = get_block_id n in
-      let col = _dot_color b_id in
       Printf.sprintf "%s%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s; b:%i }\""
         a (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id ^
         (if is_reusable n && b_id <> -1 then
-           Printf.sprintf "style=filled fillcolor=\"%s\"" col else "") ^
+           let col = _dot_colour b_id in
+           Printf.sprintf "style=filled fillcolor=\"%s\"" col
+         else "") ^
           "];\n"
     ) "" graph.output
     in

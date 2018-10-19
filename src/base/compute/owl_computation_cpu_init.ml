@@ -182,11 +182,14 @@ module Make
      *   )
      * in *)
     let best_block_to_reuse numel =
+      let factor = 10000 in
       let best = ref (-1) in
       (* find the current max size available *)
       Hashtbl.iter (fun s _ -> if s > !best then best := s) reusable;
       Hashtbl.iter (fun s _ -> if s < !best && s >= numel then best := s) reusable;
-      if !best <= 1 then None
+      (* Experimental heuristic: do not reuse memory if the number of
+       * elements is too different *)
+      if !best <= 1 || !best <= numel/factor || !best >= numel*factor then None
       else (
         let b_id = Hashtbl.find reusable !best in
         if !best < numel then (
@@ -258,6 +261,59 @@ module Make
       ) node_to_block
 
 
+  let init_stats nodes =
+    let total_elt = ref 0
+    and shared_elt = ref 0
+    and non_shared_elt = ref 0 in
+    let total_nodes = ref 0
+    and reusable_nodes = ref 0
+    and non_reusable_nodes = ref 0 in
+    let blocks_seen = Hashtbl.create 256 in
+    let reusable_blocks = ref 0
+    and non_reusable_blocks = ref 0 in
+    let alloc_reusable = ref 0
+    and alloc_non_reusable = ref 0 in
+    let update_stats x =
+      let numel_x = node_numel x in
+      total_elt := !total_elt + numel_x;
+      total_nodes := !total_nodes + 1;
+      if is_reusable x then (
+        shared_elt := !shared_elt + numel_x;
+        reusable_nodes := !reusable_nodes + 1
+      )
+      else (
+        non_shared_elt := !non_shared_elt + numel_x;
+        non_reusable_nodes := !non_reusable_nodes + 1;
+      );
+
+      let block_x = (get_block_exn x).(0) in
+      let b_id = get_block_id x in
+      if not (Hashtbl.mem blocks_seen b_id) then (
+        Hashtbl.add blocks_seen b_id None;
+        if is_reusable x then (
+          reusable_blocks := !reusable_blocks + 1;
+          alloc_reusable := !alloc_reusable + block_x.size;
+        )
+        else (
+          non_reusable_blocks := !non_reusable_blocks + 1;
+          alloc_non_reusable := !alloc_non_reusable + block_x.size;
+        )
+      )
+    in
+    Owl_graph.iter_ancestors update_stats nodes;
+
+    let s =
+      Printf.sprintf "*** INITIALISATION STATISTICS ***\n" ^
+      Printf.sprintf "%d nodes, %d elements\n" !total_nodes !total_elt ^
+      Printf.sprintf "%d reusable nodes, %d elements\n"
+        !reusable_nodes !shared_elt ^
+      Printf.sprintf "%d non-reusable nodes, %d elements\n"
+        !non_reusable_nodes !non_shared_elt ^
+      Printf.sprintf "%d shared blocks, %d allocated elements\n"
+        !reusable_blocks !alloc_reusable ^
+      Printf.sprintf "TOTAL ALLOCATED ELEMENTS: %d\n"
+        (!alloc_reusable + !alloc_non_reusable) in
+    Owl_log.info "%s" s
 end
 
 

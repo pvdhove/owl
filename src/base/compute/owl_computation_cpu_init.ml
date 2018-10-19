@@ -143,7 +143,6 @@ module Make
     let empty = IntMap.empty
 
     let add map k v =
-      Printf.printf "add %d\n" k;
       if IntMap.mem k map then (
         let stack_k = IntMap.find k map in
         Stack.push stack_k v;
@@ -156,7 +155,6 @@ module Make
       )
 
     let remove map k =
-      Printf.printf "remove %d\n" k;
       let stack_k = IntMap.find k map in
       let () = match Stack.pop stack_k with
         | Some _ -> ()
@@ -168,8 +166,7 @@ module Make
 
     let find_first_opt map f =
       match IntMap.find_first_opt f map with
-      | Some (k, s) -> Printf.printf "ffo: %d\n" k;
-         (match Stack.peek s with
+      | Some (k, s) -> (match Stack.peek s with
                         | Some v -> Some (k, v)
                         | None   -> _fail "find_first_opt")
       | None        -> None

@@ -18,7 +18,6 @@ module Make
   open Shape.Type
 
   open Shape.Type.Device
-  (* TODO: Put getters/setters in owl_comp_type and hide implementation *)
 
   (* string representation of symbols *)
 

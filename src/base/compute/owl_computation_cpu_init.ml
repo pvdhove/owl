@@ -41,9 +41,9 @@ module Make
 
 
   (* written to be as safe as possible, but can probably set to true more
-   * operations.
-   * Careful: Broadcasting operations can not overwrite parents. *)
-  let can_overwrite_parents x = match get_operator x with
+   * operations. *)
+  let can_overwrite_parents x =
+    match get_operator x with
     | Create _shape                                  -> false
     | Sequential _shape                              -> false
     | Uniform _shape                                 -> false
@@ -114,6 +114,8 @@ module Make
    * can safely overwrite and the others. *)
   let split_parents x =
     let par = Owl_utils.Array.unique (parents x) in
+    (* Broadcastable operations can only overwrite the parents that have the
+     * same shape *)
     if is_broadcastable x then
       let sx = node_shape x in
       Owl_utils.Array.filter (fun p -> node_shape p = sx) par,
@@ -122,23 +124,77 @@ module Make
     else [||], par
 
 
-  module IntMap = Map.Make(struct
-                      type t = int
-                      let compare : int -> int -> int = compare
-                    end)
+  (* Simulates a multimap using Base.Map and Owl_utils.Stack values.
+   * Access and removals are O(log n). *)
+  module MultiMap = struct
 
+    module Stack = Owl_utils.Stack
+
+    module IntMap = Map.Make(struct
+                        type t = int
+                        let compare : int -> int -> int = compare
+                      end)
+
+    type t = (int Stack.t) IntMap.t
+
+    let _fail f_name = failwith ("cpu_init: MultiMap: " ^ f_name ^
+                                   ": no stack should be empty")
+
+    let empty = IntMap.empty
+
+    let add map k v =
+      Printf.printf "add %d\n" k;
+      if IntMap.mem k map then (
+        let stack_k = IntMap.find k map in
+        Stack.push stack_k v;
+        map
+      )
+      else (
+        let stack_k = Stack.make () in
+        Stack.push stack_k v;
+        IntMap.add k stack_k map
+      )
+
+    let remove map k =
+      Printf.printf "remove %d\n" k;
+      let stack_k = IntMap.find k map in
+      let () = match Stack.pop stack_k with
+        | Some _ -> ()
+        | None   -> _fail "remove" in
+      if Stack.is_empty stack_k then IntMap.remove k map
+      else map
+
+    let is_empty = IntMap.is_empty
+
+    let find_first_opt map f =
+      match IntMap.find_first_opt f map with
+      | Some (k, s) -> Printf.printf "ffo: %d\n" k;
+         (match Stack.peek s with
+                        | Some v -> Some (k, v)
+                        | None   -> _fail "find_first_opt")
+      | None        -> None
+
+    let max_binding map =
+      let k, stack = IntMap.max_binding map in
+      let v = match Stack.peek stack with
+        | Some v -> v
+        | None   -> _fail "max_binding"
+      in
+      k, v
+
+  end
 
   (* core initialisation function *)
   let _init_terms nodes =
-    (* hashtable associating to each node its number of references left to use *)
+    (* hashtable: node -> its number of references left to use *)
     let refs = Hashtbl.create 256 in
-    (* hashtable associating a number of elements to the id of a reusable block *)
-    let reusable = Hashtbl.create 256 in
-    (* hashtable associating the id of a block to each node *)
+    (* number of elements -> id of a reusable block of corresponding size *)
+    let reusable = ref MultiMap.empty in
+    (* node id -> id of a block that was assigned to it *)
     let node_to_block = Hashtbl.create 256 in
-    (* hashtable associating to each block its size *)
+    (* block -> its size *)
     let block_to_size = Hashtbl.create 256 in
-    (* hashtable associating to each node id the corresponding node *)
+    (* node id -> the corresponding node *)
     let id_to_node = Hashtbl.create 256 in
 
     (* already has a block or is already associated to a block id during the
@@ -159,7 +215,7 @@ module Make
           Hashtbl.remove refs id_p;
           let block_id = Hashtbl.find node_to_block id_p in
           let block_size = Hashtbl.find block_to_size block_id in
-          Hashtbl.add reusable block_size block_id
+          reusable := MultiMap.add !reusable block_size block_id
         )
         else Hashtbl.replace refs id_p (num - 1)
       )
@@ -167,35 +223,19 @@ module Make
 
     (* Heuristic: return the smallest block that is larger than numel.
      * If no such block exists, return the biggest one and make it bigger.
-     * TODO: make it O(log). *)
-
-    (* let best_block_to_reuse numel =
-     *   if IntMap.is_empty !reusable then None
-     *   else (
-     *     let to_reuse = IntMap.find_first_opt (fun k -> k >= numel) !reusable in
-     *     let to_reuse = match to_reuse with
-     *       | Some x -> x
-     *       | None   -> IntMap.max_binding !reusable
-     *     in
-     *     reusable := IntMap.remove (fst to_reuse) !reusable;
-     *     Some (snd to_reuse)
-     *   )
-     * in *)
+     * Time complexity: O(log n) where n is the size of [reusable]. *)
     let best_block_to_reuse numel =
-      let factor = 10000 in
-      let best = ref (-1) in
-      (* find the current max size available *)
-      Hashtbl.iter (fun s _ -> if s > !best then best := s) reusable;
-      Hashtbl.iter (fun s _ -> if s < !best && s >= numel then best := s) reusable;
-      (* Experimental heuristic: do not reuse memory if the number of
-       * elements is too different *)
-      if !best <= 1 || !best <= numel/factor || !best >= numel*factor then None
+      if MultiMap.is_empty !reusable then None
       else (
-        let b_id = Hashtbl.find reusable !best in
-        if !best < numel then (
+        let to_reuse = MultiMap.find_first_opt !reusable (fun k -> k >= numel) in
+        let size, b_id = match to_reuse with
+          | Some x -> x
+          | None   -> MultiMap.max_binding !reusable
+        in
+        reusable := MultiMap.remove !reusable size;
+        if size < numel then (
           Hashtbl.replace block_to_size b_id numel
         );
-        Hashtbl.remove reusable !best;
         Some b_id
       )
     in
@@ -214,10 +254,8 @@ module Make
       let numel_x = node_numel x in
       let block_id_to_reuse = best_block_to_reuse numel_x in
       match block_id_to_reuse with
-      | Some b_id ->
-         Hashtbl.add node_to_block (id x) b_id
-      | None ->
-         allocate_new x
+      | Some b_id -> Hashtbl.add node_to_block (id x) b_id
+      | None      -> allocate_new x
     in
 
     (* assumes that the parents of an initialised node are always initialised. *)
@@ -229,7 +267,7 @@ module Make
         Array.iter init (parents x);
         let pre_par, post_par = split_parents x in
         Array.iter update_parent pre_par;
-        if is_reusable x && node_numel x <> 1 then (
+        if is_reusable x && not (is_elt x) then (
           Hashtbl.add refs (id x) (refnum x);
           allocate x
         )
@@ -240,10 +278,10 @@ module Make
         Array.iter update_parent post_par;
       )
     in
-    (* links all the nodes to a block id and all the blocks to a size *)
+    (* link all the nodes to a block id and all the blocks to a size *)
     Array.iter init nodes;
 
-    (* Creates the blocks and initialises the relevant attributes of the nodes *)
+    (* create the blocks and initialises the relevant attributes of the nodes *)
     let id_to_block = Hashtbl.create 256 in
     Hashtbl.iter
       (fun x_id b_id ->
@@ -302,18 +340,25 @@ module Make
     in
     Owl_graph.iter_ancestors update_stats nodes;
 
-    let s =
-      Printf.sprintf "*** INITIALISATION STATISTICS ***\n" ^
-      Printf.sprintf "%d nodes, %d elements\n" !total_nodes !total_elt ^
-      Printf.sprintf "%d reusable nodes, %d elements\n"
-        !reusable_nodes !shared_elt ^
-      Printf.sprintf "%d non-reusable nodes, %d elements\n"
-        !non_reusable_nodes !non_shared_elt ^
-      Printf.sprintf "%d shared blocks, %d allocated elements\n"
-        !reusable_blocks !alloc_reusable ^
-      Printf.sprintf "TOTAL ALLOCATED ELEMENTS: %d\n"
-        (!alloc_reusable + !alloc_non_reusable) in
-    Owl_log.info "%s" s
+    let b = Buffer.create 170 in
+    Buffer.add_string b "*** INITIALISATION STATISTICS ***\n";
+    Buffer.add_string b
+      (Printf.sprintf "  %d nodes, %d elements\n" !total_nodes !total_elt);
+    Buffer.add_string b
+      (Printf.sprintf "  %d reusable nodes, %d elements\n"
+         !reusable_nodes !shared_elt);
+    Buffer.add_string b
+      (Printf.sprintf "  %d non-reusable nodes, %d elements\n"
+         !non_reusable_nodes !non_shared_elt);
+    Buffer.add_string b
+      (Printf.sprintf "  %d shared blocks, %d allocated elements\n"
+         !reusable_blocks !alloc_reusable);
+    Buffer.add_string b
+      (Printf.sprintf "  TOTAL ALLOCATED ELEMENTS: %d\n"
+         (!alloc_reusable + !alloc_non_reusable));
+    Owl_log.info "%s" (Buffer.contents b)
+
+
 end
 
 

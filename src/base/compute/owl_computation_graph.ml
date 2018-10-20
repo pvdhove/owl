@@ -64,7 +64,7 @@ module Make
     let h = float (h mod 360) /. 360. in
     let s = 0.4 in
     let v = 1. in
-    Printf.sprintf "%.3f %.3f %.3f" h s v
+    Printf.sprintf "%.3f %.1f %.1f" h s v
 
 
   let graph_to_dot graph =

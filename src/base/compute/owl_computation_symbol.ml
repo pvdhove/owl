@@ -286,12 +286,11 @@ module Make
   let elt_to_node = function Elt x -> x
 
 
-  let _global_block_id = ref 0
-
-
-  let block_id () =
-    _global_block_id := !_global_block_id + 1;
-    !_global_block_id
+  let block_id =
+    let _global_block_id = ref 0 in
+    (fun () ->
+      _global_block_id := !_global_block_id + 1;
+      !_global_block_id)
 
 
   (* Meant for reusable nodes. *)

@@ -16,6 +16,12 @@ module Make
 
   open Graph.Optimiser.Operator.Symbol.Shape.Type
 
+  module MultiMap = Owl_utils_multimap.Make(
+                        struct
+                          type t = int
+                          let compare : int -> int -> int = compare
+                        end)
+
 
   (* utility functions *)
 
@@ -124,63 +130,6 @@ module Make
     else [||], par
 
 
-  (* Simulates a multimap using Base.Map and Owl_utils.Stack values.
-   * Access and removals are O(log n). *)
-  module MultiMap = struct
-
-    module Stack = Owl_utils.Stack
-
-    module IntMap = Map.Make(struct
-                        type t = int
-                        let compare : int -> int -> int = compare
-                      end)
-
-    type t = (int Stack.t) IntMap.t
-
-    let _fail f_name = failwith ("cpu_init: MultiMap: " ^ f_name ^
-                                   ": no stack should be empty")
-
-    let empty = IntMap.empty
-
-    let add map k v =
-      if IntMap.mem k map then (
-        let stack_k = IntMap.find k map in
-        Stack.push stack_k v;
-        map
-      )
-      else (
-        let stack_k = Stack.make () in
-        Stack.push stack_k v;
-        IntMap.add k stack_k map
-      )
-
-    let remove map k =
-      let stack_k = IntMap.find k map in
-      let () = match Stack.pop stack_k with
-        | Some _ -> ()
-        | None   -> _fail "remove" in
-      if Stack.is_empty stack_k then IntMap.remove k map
-      else map
-
-    let is_empty = IntMap.is_empty
-
-    let find_first_opt map f =
-      match IntMap.find_first_opt f map with
-      | Some (k, s) -> (match Stack.peek s with
-                        | Some v -> Some (k, v)
-                        | None   -> _fail "find_first_opt")
-      | None        -> None
-
-    let max_binding map =
-      let k, stack = IntMap.max_binding map in
-      let v = match Stack.peek stack with
-        | Some v -> v
-        | None   -> _fail "max_binding"
-      in
-      k, v
-
-  end
-
   (* core initialisation function *)
   let _init_terms nodes =
     (* hashtable: node -> its number of references left to use *)
@@ -212,7 +161,7 @@ module Make
           Hashtbl.remove refs id_p;
           let block_id = Hashtbl.find node_to_block id_p in
           let block_size = Hashtbl.find block_to_size block_id in
-          reusable := MultiMap.add !reusable block_size block_id
+          reusable := MultiMap.add block_size block_id !reusable
         )
         else Hashtbl.replace refs id_p (num - 1)
       )
@@ -224,12 +173,12 @@ module Make
     let best_block_to_reuse numel =
       if MultiMap.is_empty !reusable then None
       else (
-        let to_reuse = MultiMap.find_first_opt !reusable (fun k -> k >= numel) in
+        let to_reuse = MultiMap.find_first_opt (fun k -> k >= numel) !reusable in
         let size, b_id = match to_reuse with
           | Some x -> x
           | None   -> MultiMap.max_binding !reusable
         in
-        reusable := MultiMap.remove !reusable size;
+        reusable := MultiMap.remove size !reusable;
         if size < numel then (
           Hashtbl.replace block_to_size b_id numel
         );
@@ -255,7 +204,7 @@ module Make
       | None      -> allocate_new x
     in
 
-    (* assumes that the parents of an initialised node are always initialised. *)
+    (* assume the parents of an uninitialised node are always initialised *)
     let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
 

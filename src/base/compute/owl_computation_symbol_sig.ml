@@ -130,7 +130,7 @@ module type Sig = sig
 
   val get_shared_nodes : attr Owl_graph.node -> (attr Owl_graph.node) array
   (**
-  ``get_shared_nodes node`` Return the nodes sharing the same block of
+  ``get_shared_nodes node`` return the nodes sharing the same block of
   memory as ``node``.
    *)
 

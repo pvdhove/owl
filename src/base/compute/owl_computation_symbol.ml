@@ -286,35 +286,35 @@ module Make
   let elt_to_node = function Elt x -> x
 
 
-  let block_id =
-    let _global_block_id = ref 0 in
+  let new_block_id =
+    let _global_block_id = ref (Random.int 10000000) in
+    Printf.printf "RESTARTED!!!\n%!";
     (fun () ->
       _global_block_id := !_global_block_id + 1;
+      if !_global_block_id = 823 then Owl_log.warn "hein823";
       !_global_block_id)
 
 
   (* Meant for reusable nodes. *)
-  let make_empty_block ?id size =
-    let id = match id with
-      | Some id -> id
-      | None    -> block_id () in
+  let make_empty_block ?block_id size =
+    let block_id = match block_id with
+      | Some block_id -> block_id
+      | None          -> new_block_id () in
     let memory = arr_to_value (A.empty [|size|]) in
-    { size; active = None; memory; nodes = []; id; }
+    { size; block_id; active = None; memory; nodes = []; }
 
 
   (* This is meant for nodes that are not reusable: memory is not reshaped. *)
   (* TODO: Enforce this behaviour? *)
-  let make_value_block ?id memory x =
-    let id = match id with
-      | Some id -> id
-      | None    -> block_id () in
+  let make_value_block memory x =
+    if (id x) = 1537 then Owl_log.fatal "%s" (node_to_str x);
+    let block_id = new_block_id () in
     let size = match memory with
       | EltVal _ -> 1
       | ArrVal x -> A.numel x in
-    let block = { size; active = Some x; memory; nodes = [ x ]; id; } in
+    let block = { size; block_id; active = Some x; memory; nodes = [ x ]; } in
     (attr x).value <- [| memory |];
-    (attr x).block <- Some [| block |];
-    block
+    (attr x).block <- Some [| block |]
 
 
   let make_node ?name ?value ?shape ?freeze ?reuse ?state op =
@@ -326,7 +326,7 @@ module Make
     let attr = { op; freeze; reuse; state; shape; value; block = None; } in
     let node = Owl_graph.node ?name attr in
     if value <> [| |] then (
-      attr.block <- Some (Array.map (fun v -> make_value_block v node) value);
+      make_value_block value.(0) node
     );
     node
 
@@ -407,7 +407,7 @@ module Make
 
 
   let get_block_id x = match get_block x with
-    | Some bs -> bs.(0).id
+    | Some bs -> bs.(0).block_id
     | None    -> -1
 
 
@@ -418,12 +418,9 @@ module Make
         | Some _ ->
            let xv = value_to_arr (attr x).value.(0) in
            A.copy_ ~out:xv vv
-        | None    -> (
-          make_value_block v.(0) x |> ignore
-        )
+        | None    -> make_value_block v.(0) x
        )
-    | EltVal _ ->
-       make_value_block v.(0) x |> ignore
+    | EltVal _ -> make_value_block v.(0) x
 
 
   let get_value x = (attr x).value

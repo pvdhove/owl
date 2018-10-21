@@ -439,6 +439,7 @@ module Make
     in
     results
 
+
   (* ``model network`` transforms the network into a computation graph and
   optimises it. Returns a function that takes the input of the network as an
   argument and returns the output. *)

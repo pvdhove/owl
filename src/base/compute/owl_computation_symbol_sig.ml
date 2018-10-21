@@ -74,15 +74,15 @@ module type Sig = sig
   val const_elt : string -> A.elt -> elt
   (** TODO *)
 
-  val block_id : unit -> int
-  (** ``block_id ()`` returns an unused block id. *)
+  val new_block_id : unit -> int
+  (** ``new_block_id ()`` returns an unused block id. *)
 
-  val make_empty_block : ?id:int -> int -> block
+  val make_empty_block : ?block_id:int -> int -> block
   (** ``make_empty_block s`` returns an empty block of memory of size ``s``. *)
 
-  val make_value_block : ?id:int -> value -> attr Owl_graph.node -> block
+  val make_value_block : value -> attr Owl_graph.node -> unit
   (**
-  ``make_value_block value node`` returns a block of memory initialised with
+  ``make_value_block value node`` creates a block of memory initialised with
   ``value`` and links the new block to ``node``.
    *)
 

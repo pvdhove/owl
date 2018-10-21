@@ -24,7 +24,7 @@ module type Sig = sig
 
   and block = {
     size           : int;      (* the number of elements of the block *)
-    id             : int;      (* id of the block *)
+    block_id       : int;      (* id of the block *)
     mutable active : t option; (* the node whose memory is being stored (if any) *)
     mutable memory : value;    (* the value of the active node *)
     mutable nodes  : t list;   (* the nodes sharing the memory block *)

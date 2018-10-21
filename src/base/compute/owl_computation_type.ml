@@ -30,7 +30,7 @@ module Make
      * different types of elements are mixed in the same CG, should replace it
      * with a size in bytes. *)
     size           : int;       (* the number of elements stored in the block *)
-    id             : int;       (* id of the block *)
+    block_id       : int;       (* id of the block *)
     mutable active : t option;  (* the node whose memory is being stored (if any) *)
     mutable memory : value;     (* the placeholder for the value *)
     mutable nodes  : t list;    (* the nodes sharing the memory block *)

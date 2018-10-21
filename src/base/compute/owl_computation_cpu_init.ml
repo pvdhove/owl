@@ -240,7 +240,7 @@ module Make
     (* Links node [x] to a new block. *)
     let allocate_new x =
       let numel_x = node_numel x in
-      let b_id = block_id () in
+      let b_id = new_block_id () in
       Hashtbl.add node_to_block (id x) b_id;
       Hashtbl.add block_to_size b_id numel_x
     in
@@ -289,7 +289,7 @@ module Make
         )
         else (
           let size = Hashtbl.find block_to_size b_id in
-          let block = make_empty_block ~id:b_id size in
+          let block = make_empty_block ~block_id:b_id size in
           Hashtbl.add id_to_block b_id block;
           add_node_to_block x block
         )
@@ -310,8 +310,8 @@ module Make
     and alloc_non_reusable = ref 0 in
     let update_stats x =
       let numel_x = node_numel x in
-      total_elt := !total_elt + numel_x;
       total_nodes := !total_nodes + 1;
+      total_elt := !total_elt + numel_x;
       if is_reusable x then (
         reusable_nodes := !reusable_nodes + 1;
         shared_elt := !shared_elt + numel_x
@@ -323,6 +323,7 @@ module Make
 
       let block_x = (get_block_exn x).(0) in
       let b_id = get_block_id x in
+
       if not (Hashtbl.mem blocks_seen b_id) then (
         Hashtbl.add blocks_seen b_id None;
         if is_reusable x then (

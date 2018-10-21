@@ -117,7 +117,7 @@ module Make
 
 
   (* return a partition of the parents in two arrays: the parents that the node
-   * can safely overwrite and the others. *)
+   * can safely overwrite during its computation and the others. *)
   let split_parents x =
     let par = Owl_utils.Array.unique (parents x) in
     (* Broadcastable operations can only overwrite the parents that have the
@@ -138,8 +138,8 @@ module Make
     let reusable = ref MultiMap.empty in
     (* node id -> id of a block that was assigned to it *)
     let node_to_block = Hashtbl.create 256 in
-    (* block -> its size *)
-    let block_to_size = Hashtbl.create 256 in
+    (* block id -> its size *)
+    let block_to_size = Hashtbl.create 16 in
     (* node id -> the corresponding node *)
     let id_to_node = Hashtbl.create 256 in
 
@@ -204,7 +204,7 @@ module Make
       | None      -> allocate_new x
     in
 
-    (* assume the parents of an uninitialised node are always initialised *)
+    (* assume the parents of an initialised node are always initialised *)
     let rec init x =
       Owl_log.debug "init %s ..." (node_to_str x);
 
@@ -213,6 +213,7 @@ module Make
         Array.iter init (parents x);
         let pre_par, post_par = split_parents x in
         Array.iter update_parent pre_par;
+        (* do not bother sharing the memory of single elements *)
         if is_reusable x && not (is_elt x) then (
           Hashtbl.add refs (id x) (refnum x);
           allocate x
@@ -227,8 +228,8 @@ module Make
     (* link all the nodes to a block id and all the blocks to a size *)
     Array.iter init nodes;
 
-    (* create the blocks and initialises the relevant attributes of the nodes *)
-    let id_to_block = Hashtbl.create 256 in
+    (* create the blocks and initialise the relevant attributes of the nodes *)
+    let id_to_block = Hashtbl.create 16 in
     Hashtbl.iter
       (fun x_id b_id ->
         let x = Hashtbl.find id_to_node x_id in
@@ -245,6 +246,8 @@ module Make
       ) node_to_block
 
 
+  (* display some statistics about the number of blocks and the number of
+   * allocated elements *)
   let init_stats nodes =
     let total_elt = ref 0
     and shared_elt = ref 0
@@ -278,6 +281,7 @@ module Make
         )
       )
     in
+
     Owl_graph.iter_ancestors update_stats nodes;
 
     let b = Buffer.create 170 in

@@ -3,9 +3,8 @@
  * Copyright (c) 2016-2018 Liang Wang <liang.wang@cl.cam.ac.uk>
  *)
 
-(* An implementation of an ordered multimap for Owl's internal use. *)
-
-(* Simulates an ordered multimap using Map and Owl_utils.Stack values.
+(* An implementation of an ordered multimap for Owl's internal use.
+ * Simulates an ordered multimap using Map and Owl_utils.Stack values.
  * Functions behave in the same way as those in Map, with the difference that
  * one key can be bound to multiple values.
  * Access and removals are O(log n). *)

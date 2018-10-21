@@ -287,11 +287,9 @@ module Make
 
 
   let new_block_id =
-    let _global_block_id = ref (Random.int 10000000) in
-    Printf.printf "RESTARTED!!!\n%!";
+    let _global_block_id = ref 0 in
     (fun () ->
       _global_block_id := !_global_block_id + 1;
-      if !_global_block_id = 823 then Owl_log.warn "hein823";
       !_global_block_id)
 
 
@@ -307,7 +305,6 @@ module Make
   (* This is meant for nodes that are not reusable: memory is not reshaped. *)
   (* TODO: Enforce this behaviour? *)
   let make_value_block memory x =
-    if (id x) = 1537 then Owl_log.fatal "%s" (node_to_str x);
     let block_id = new_block_id () in
     let size = match memory with
       | EltVal _ -> 1

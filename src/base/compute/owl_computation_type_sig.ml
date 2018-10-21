@@ -29,7 +29,10 @@ module type Sig = sig
     mutable memory : value;    (* the value of the active node *)
     mutable nodes  : t list;   (* the nodes sharing the memory block *)
   }
-  (** TODO *)
+  (**
+  ``block`` type keeps a reference to a block of memory and to the nodes
+  sharing that block.
+   *)
 
   and attr = {
     mutable op     : op;                        (* operation stored in this node *)

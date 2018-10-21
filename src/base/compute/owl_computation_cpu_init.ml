@@ -305,9 +305,7 @@ module Make
     and non_reusable_nodes = ref 0 in
     let blocks_seen = Hashtbl.create 256 in
     let reusable_blocks = ref 0
-    and non_reusable_blocks = ref 0 in
-    let alloc_reusable = ref 0
-    and alloc_non_reusable = ref 0 in
+    and alloc_reusable = ref 0 in
     let update_stats x =
       let numel_x = node_numel x in
       total_nodes := !total_nodes + 1;
@@ -322,20 +320,14 @@ module Make
       );
 
       let block_x = (get_block_exn x).(0) in
-      let b_id = get_block_id x in
 
-      if not (Hashtbl.mem blocks_seen b_id) then (
-        Hashtbl.add blocks_seen b_id None;
+      if not (Hashtbl.mem blocks_seen block_x) then (
+        Hashtbl.add blocks_seen block_x None;
         if is_reusable x then (
           reusable_blocks := !reusable_blocks + 1;
           alloc_reusable := !alloc_reusable + block_x.size
         )
-        else (
-          non_reusable_blocks := !non_reusable_blocks + 1;
-          alloc_non_reusable := !alloc_non_reusable + block_x.size
-        )
-      ) else if not (is_reusable x) then
-        Owl_log.warn "%d: %s" b_id (node_to_str x)
+      )
     in
     Owl_graph.iter_ancestors update_stats nodes;
 
@@ -350,14 +342,11 @@ module Make
       (Printf.sprintf "  %d non-reusable nodes, %d elements\n"
          !non_reusable_nodes !non_shared_elt);
     Buffer.add_string b
-      (Printf.sprintf "  %d shared blocks, %d allocated elements\n"
+      (Printf.sprintf "  %d shared blocks, %d elements\n"
          !reusable_blocks !alloc_reusable);
     Buffer.add_string b
-      (Printf.sprintf "  %d non shared blocks, %d non allocated elements\n"
-         !non_reusable_blocks !alloc_non_reusable);
-    Buffer.add_string b
-      (Printf.sprintf "  TOTAL ALLOCATED ELEMENTS: %d\n"
-         (!alloc_reusable + !alloc_non_reusable));
+      (Printf.sprintf "  TOTAL NUMBER OF ALLOCATED ELEMENTS: %d\n"
+         (!alloc_reusable + !non_shared_elt));
     Owl_log.info "%s" (Buffer.contents b)
 
 

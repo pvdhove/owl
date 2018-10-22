@@ -51,20 +51,12 @@ module Make
       Printf.sprintf "s:%s" (shape_to_str shape)
 
 
-  let _colour = ref 0
-  let block_to_col = Hashtbl.create 15
   let _block_colour b_id =
-    let h =
-      if Hashtbl.mem block_to_col b_id then Hashtbl.find block_to_col b_id
-      else (
-        _colour := !_colour + 29;
-        Hashtbl.add block_to_col b_id !_colour;
-        !_colour
-      ) in
-    let h = float (h mod 360) /. 360. in
+    (* lazy attempt to generate distinguishable colours *)
+    let h = float ((b_id * 283) mod 360) /. 360. in
     let s = 0.4 in
     let v = 1. in
-    Printf.sprintf "%.3f %.1f %.1f" h s v
+    Printf.sprintf "%.3f %.1f %.0f" h s v
 
 
   let graph_to_dot graph =

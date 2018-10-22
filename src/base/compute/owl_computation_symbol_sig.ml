@@ -105,7 +105,10 @@ module type Sig = sig
   (** Update the node that is currently using the block of memory. *)
 
   val get_block_id : attr Owl_graph.node -> int
-  (** Return the id of the block. *)
+  (**
+  ``get_block_id node`` returns the id of the block assigned to ``node``. If
+  ``node`` has not been assigned yet, returns ``-1``.
+   *)
 
   val set_value : attr Owl_graph.node -> value array -> unit
   (** TODO *)

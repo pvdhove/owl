@@ -304,7 +304,6 @@ module Make
 
 
   (* This is meant for nodes that are not reusable: memory is not reshaped. *)
-  (* TODO: Enforce this behaviour? *)
   let make_value_block memory x =
     let block_id = new_block_id () in
     let size = match memory with
@@ -418,7 +417,11 @@ module Make
            A.copy_ ~out:xv vv
         | None    -> make_value_block v.(0) x
        )
-    | EltVal _ -> make_value_block v.(0) x
+    | EltVal _ ->
+       (match get_block_opt x with
+        | Some bs -> (attr x).value <- v; bs.(0).memory <- v.(0)
+        | None    -> make_value_block v.(0) x
+       )
 
 
   let get_value x = (attr x).value

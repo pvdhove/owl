@@ -28,7 +28,6 @@ module Make_Nested
   (* ! Make sure the order of evaluation of init and eval is always the same. *)
   let eval_gen nodes =
     CG_Init._init_terms nodes;
-    (* CG_Init.init_stats nodes; *)
     Array.iter CG_Eval._eval_term nodes
 
 
@@ -40,8 +39,6 @@ module Make_Nested
 
   let eval_graph graph =
     Graph.invalidate_rvs graph;
-    let s = Graph.graph_to_dot graph in
-    Owl_io.write_file "allocate_inception.dot" s;
     Graph.get_outputs graph |> eval_gen
 
 

@@ -168,9 +168,9 @@ module Make
       )
     in
 
-    (* Heuristic: return the smallest block that is larger than numel.
+    (* Heuristic: return the smallest block that is greater than [numel].
      * If no such block exists, return the biggest one and make it bigger.
-     * Time complexity: O(log n) where n is the size of [reusable]. *)
+     * Time complexity: [O(log b)] where [b] is the size of [reusable]. *)
     let best_block_to_reuse numel =
       if MultiMap.is_empty !reusable then None
       else (

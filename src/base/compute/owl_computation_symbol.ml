@@ -298,6 +298,7 @@ module Make
     let block_id = match block_id with
       | Some block_id -> block_id
       | None          -> new_block_id () in
+    (* allocate a one-dimensional array *)
     let memory = arr_to_value (A.empty [|size|]) in
     { size; block_id; active = None; memory; nodes = []; }
 
@@ -369,16 +370,16 @@ module Make
     |> node_to_elt
 
 
-  let get_nodes_block b = b.nodes
+  let get_nodes_using_block b = b.nodes
 
 
   let _get_value_block b = b.memory
 
 
-  let get_block x = (attr x).block
+  let get_block_opt x = (attr x).block
 
 
-  let get_block_exn x = match get_block x with
+  let get_block x = match get_block_opt x with
     | Some b -> b
     | None   -> failwith "Symbol:get_block_exn: block not assigned"
 
@@ -390,7 +391,7 @@ module Make
     let dst_shp = node_shape x in
     let dst_numel = node_numel x in
     let src_val = value_to_arr (_get_value_block block) in
-    (* allocates the first [dst_numel] elements for the memory of the node *)
+    (* allocate the first [dst_numel] elements for the memory of the node *)
     let dst_val = arr_to_value (A.reshape (A.sub_left src_val 0 dst_numel) dst_shp) in
     block.nodes <- x :: block.nodes;
     _set_block x [| block |];
@@ -403,7 +404,7 @@ module Make
   let set_active_node b x = b.active <- Some x
 
 
-  let get_block_id x = match get_block x with
+  let get_block_id x = match get_block_opt x with
     | Some bs -> bs.(0).block_id
     | None    -> -1
 
@@ -411,7 +412,7 @@ module Make
   let set_value x v =
     match v.(0) with
     | ArrVal vv ->
-       (match get_block x with
+       (match get_block_opt x with
         | Some _ ->
            let xv = value_to_arr (attr x).value.(0) in
            A.copy_ ~out:xv vv
@@ -440,17 +441,17 @@ module Make
   let is_reusable x = (attr x).reuse
 
 
-  let is_shared x = match (get_block x) with
-    | Some bs -> (match get_nodes_block bs.(0) with
-                  | _ :: _ :: _ -> true
+  let is_shared x = match get_block_opt x with
+    | Some bs -> (match get_nodes_using_block bs.(0) with
+                  | _ :: _ :: _ -> true (* at least 2 elements *)
                   | _           -> false
                  )
     | None    -> false
 
 
   (* contains itself *)
-  let get_shared_nodes x = match (get_block x) with
-    | Some bs -> Array.of_list (get_nodes_block bs.(0))
+  let get_shared_nodes x = match get_block_opt x with
+    | Some bs -> Array.of_list (get_nodes_using_block bs.(0))
     | None    -> [| x |]
 
 
@@ -475,7 +476,7 @@ module Make
 
 
   let is_assigned x =
-    match get_block x with
+    match get_block_opt x with
     | Some _ -> true
     | None   -> false
 

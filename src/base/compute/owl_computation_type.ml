@@ -26,7 +26,7 @@ module Make
   type t = attr Owl_graph.node
 
   and block = {
-    (* the next field assumes that all the elements have the same size. If
+    (* The [size] field assumes that all the elements have the same size. If
      * different types of elements are mixed in the same CG, should replace it
      * with a size in bytes. *)
     size           : int;       (* the number of elements stored in the block *)

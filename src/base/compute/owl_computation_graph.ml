@@ -53,7 +53,7 @@ module Make
 
   let _colour = ref 0
   let block_to_col = Hashtbl.create 15
-  let _dot_colour b_id =
+  let _block_colour b_id =
     let h =
       if Hashtbl.mem block_to_col b_id then Hashtbl.find block_to_col b_id
       else (
@@ -78,7 +78,7 @@ module Make
       Printf.sprintf "%s%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s; b:%i }\""
         a (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id ^
         (if is_reusable n && b_id <> -1 then
-           let col = _dot_colour b_id in
+           let col = _block_colour b_id in
            Printf.sprintf "style=filled fillcolor=\"%s\"" col
          else "") ^
           "];\n"

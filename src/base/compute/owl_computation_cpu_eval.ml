@@ -234,7 +234,7 @@ module Make
           raise exn
         )
       in
-      Array.iter (fun b -> update_validity x b) (get_block_exn x)
+      Array.iter (fun b -> update_validity x b) (get_block x)
 
 
   (* [f] is pure, for [arr array -> arr] *)

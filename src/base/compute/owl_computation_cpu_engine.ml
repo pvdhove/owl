@@ -40,6 +40,8 @@ module Make_Nested
 
   let eval_graph graph =
     Graph.invalidate_rvs graph;
+    let s = Graph.graph_to_dot graph in
+    Owl_io.write_file "allocate_inception.dot" s;
     Graph.get_outputs graph |> eval_gen
 
 

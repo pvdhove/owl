@@ -53,6 +53,7 @@ let test network =
   Owl_log.info "Accuracy on test set: %f" (accu /. (float_of_int m))
 
 let () =
+  Owl_log.(set_level INFO);
   let network = make_network [|28;28;1|] in
   Graph.print network; flush_all ();
   let _ = train network in

@@ -86,9 +86,9 @@ module type Sig = sig
   ``value`` and links the new block to ``node``.
    *)
 
-  val get_block_exn : attr Owl_graph.node -> block array
+  val get_block : attr Owl_graph.node -> block array
   (**
-  ``get_block_exn node`` returns the memory block allocated to ``node``.
+  ``get_block node`` returns the memory block allocated to ``node``.
   If no block is allocated, throws an exception.
    *)
 
@@ -102,7 +102,7 @@ module type Sig = sig
   (** Return the node that is currently using the memory of the block. *)
 
   val set_active_node : block -> attr Owl_graph.node -> unit
-  (** Update the node currently using the block of memory. *)
+  (** Update the node that is currently using the block of memory. *)
 
   val get_block_id : attr Owl_graph.node -> int
   (** Return the id of the block. *)
@@ -130,8 +130,8 @@ module type Sig = sig
 
   val get_shared_nodes : attr Owl_graph.node -> (attr Owl_graph.node) array
   (**
-  ``get_shared_nodes node`` return the nodes sharing the same block of
-  memory as ``node``.
+  ``get_shared_nodes node`` returns the nodes sharing the same block of memory
+  as ``node``.
    *)
 
   val is_var : attr Owl_graph.node -> bool

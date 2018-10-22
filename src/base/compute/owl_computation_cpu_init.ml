@@ -130,7 +130,8 @@ module Make
     else [||], par
 
 
-  (* core initialisation function *)
+  (* Core initialisation function. Inspired by
+   * https://mxnet.incubator.apache.org/architecture/note_memory.html. *)
   let _init_terms nodes =
     (* hashtable: node -> its number of references left to use *)
     let refs = Hashtbl.create 256 in
@@ -271,7 +272,7 @@ module Make
         non_shared_elt := !non_shared_elt + numel_x
       );
 
-      let block_x = (get_block_exn x).(0) in
+      let block_x = (get_block x).(0) in
 
       if not (Hashtbl.mem blocks_seen block_x) then (
         Hashtbl.add blocks_seen block_x None;

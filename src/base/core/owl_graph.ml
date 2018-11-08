@@ -5,7 +5,7 @@
 
 
 type 'a node = {
-  mutable id   : int;            (* unique identifier *)
+  id           : int;            (* unique identifier *)
   mutable name : string;         (* name of the node *)
   mutable prev : 'a node array;  (* parents of the node *)
   mutable next : 'a node array;  (* children of the node *)
@@ -18,8 +18,16 @@ type traversal = PreOrder | PostOrder
 
 type dir = Ancestor | Descendant
 
+module NodeHash = struct
+  type t = E : 'a node -> t
+  let equal = (==)
+  let hash = function E x -> x.id
+end
 
-let _global_id = ref 0
+module NodeHashtbl = Hashtbl.Make(NodeHash)
+
+
+let () = Random.self_init ()
 
 
 let id x = x.id
@@ -61,10 +69,7 @@ let set_attr x a = x.attr <- a
 let node ?id ?(name="") ?(prev=[||]) ?(next=[||]) attr =
   let id = match id with
     | Some i -> i
-    | None   -> (
-        _global_id := !_global_id + 1;
-        !_global_id
-      )
+    | None   -> Random.bits ()
   in
   { id; name; prev; next; attr }
 
@@ -91,7 +96,7 @@ let connect_ancestors parents children =
 
 
 let remove_node x =
-  let f = fun y -> y.id <> x.id in
+  let f = fun y -> y == x in
   Array.iter (fun parent ->
     parent.next <- Owl_utils.Array.filter f parent.next
   ) x.prev;
@@ -101,14 +106,14 @@ let remove_node x =
 
 
 let remove_edge src dst =
-  src.next <- Owl_utils.Array.filter (fun x -> x.id <> dst.id) src.next;
-  dst.prev <- Owl_utils.Array.filter (fun x -> x.id <> src.id) dst.prev
+  src.next <- Owl_utils.Array.filter (fun x -> x == dst) src.next;
+  dst.prev <- Owl_utils.Array.filter (fun x -> x == src) dst.prev
 
 
 let replace_child child_0 child_1 =
   Array.iter (fun parent ->
     let next = Array.map (fun v ->
-      if v.id = child_0.id then child_1 else v
+      if v == child_0 then child_1 else v
     ) parent.next
     in
     parent.next <- next;
@@ -118,7 +123,7 @@ let replace_child child_0 child_1 =
 let replace_parent parent_0 parent_1 =
   Array.iter (fun child ->
     let prev = Array.map (fun v ->
-      if v.id = parent_0.id then parent_1 else v
+      if v == parent_0 then parent_1 else v
     ) child.prev
     in
     child.prev <- prev;
@@ -129,10 +134,10 @@ let replace_parent parent_0 parent_1 =
    [next node -> node array] returns the next set of nodes to iterate;
 *)
 let dfs_iter traversal f x next =
-  let h = Hashtbl.create 512 in
+  let h = NodeHashtbl.create 512 in
   let rec _dfs_iter y =
-    if not (Hashtbl.mem h y.id) then (
-      Hashtbl.add h y.id None;
+    if not (NodeHashtbl.mem h (E y)) then (
+      NodeHashtbl.add h (E y) None;
       update y;
     )
   and relax y =
@@ -151,12 +156,12 @@ let bfs_iter traversal f x next =
   match traversal with
   | PostOrder -> Owl_log.warn "PostOrder BFS not implemented. PreOrder is used."
   | PreOrder  -> ();
-  let h = Hashtbl.create 512 in
+  let h = NodeHashtbl.create 512 in
   let q = Queue.create () in
   let relax y =
     Array.iter (fun z ->
-      if not (Hashtbl.mem h z.id) then (
-        Hashtbl.add h z.id None;
+      if not (NodeHashtbl.mem h (E z)) then (
+        NodeHashtbl.add h (E z) None;
         Queue.push z q
       )
     ) (next y)
@@ -164,7 +169,7 @@ let bfs_iter traversal f x next =
   let update y = f y; relax y in
 
   Array.iter (fun y -> Queue.push y q) x;
-  Array.iter (fun y -> Hashtbl.add h y.id None) x;
+  Array.iter (fun y -> NodeHashtbl.add h (E y) None) x;
   while not (Queue.is_empty q) do
     let y = Queue.pop q in
     update y
@@ -244,14 +249,14 @@ let _map _f _x = None
 (* TODO: optimise *)
 let copy ?(dir=Ancestor) x =
   let _make_if_not_exists h n =
-    if Hashtbl.mem h n.id = true then Hashtbl.find h n.id
+    if NodeHashtbl.mem h (E n) then n
     else (
       let n' = node ~id:n.id ~name:n.name ~prev:[||] ~next:[||] n.attr in
-      Hashtbl.add h n'.id n';
+      NodeHashtbl.add h (E n') None;
       n'
     )
   in
-  let h = Hashtbl.create 128 in
+  let h = NodeHashtbl.create 128 in
   let _copy src dst =
     let src' = _make_if_not_exists h src in
     let dst' = _make_if_not_exists h dst in
@@ -261,7 +266,7 @@ let copy ?(dir=Ancestor) x =
     | Ancestor   -> iter_in_edges _copy x
     | Descendant -> iter_out_edges _copy x
   in
-  Array.map (fun n -> Hashtbl.find h n.id) x
+  Array.map (fun n -> NodeHashtbl.find h n.id) x
 
 
 (* TODO *)

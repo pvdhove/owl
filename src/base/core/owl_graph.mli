@@ -20,11 +20,22 @@ type dir = Ancestor | Descendant
 type 'a node
 (** type definition of a node *)
 
+type hash
+(** Hash value used to hash nodes *)
+
+module Nodetbl : Hashtbl.S with type key = hash
+
 
 (** {6 Obtaining properties} *)
 
 val id : 'a node -> int
 (** ``id x`` returns the id of node ``x``. *)
+
+val hash : 'a node -> hash
+(** ``hash x`` should be used to hash ``x`` (with module Nodetbl). *)
+
+val hash_v : 'a node -> int
+
 
 val name : 'a node -> string
 (** ``name x`` returns the name string of node ``x``. *)
@@ -71,7 +82,7 @@ val length : 'a node array -> int
 
 (** {6 Manipulation functions} *)
 
-val node : ?id:int -> ?name:string -> ?prev:'a node array -> ?next:'a node array -> 'a -> 'a node
+val node : ?id:int -> ?hash:hash -> ?name:string -> ?prev:'a node array -> ?next:'a node array -> 'a -> 'a node
 (**
 ``node ~id ~name ~prev ~next attr`` creates a node with given id and name
 string. The created node is also connected to parents in ``prev`` and children

@@ -134,37 +134,36 @@ module Make
    * https://mxnet.incubator.apache.org/architecture/note_memory.html. *)
   let _init_terms nodes =
     (* hashtable: node -> its number of references left to use *)
-    let refs = Hashtbl.create 256 in
+    let refs = Nodetbl.create 256 in
     (* number of elements -> id of a reusable block of corresponding size *)
     let reusable = ref MultiMap.empty in
-    (* node id -> id of a block that was assigned to it *)
-    let node_to_block = Hashtbl.create 256 in
+    (* node hash -> id of a block that was assigned to it *)
+    let node_to_block = Nodetbl.create 256 in
     (* block id -> its size *)
     let block_to_size = Hashtbl.create 16 in
-    (* node id -> the corresponding node *)
-    let id_to_node = Hashtbl.create 256 in
+    (* node hash -> the corresponding node *)
+    let id_to_node = Nodetbl.create 256 in
 
     (* already has a block or is already associated to a block id during the
      * execution of the algorithm *)
     let is_initialised x =
-      is_assigned x || Hashtbl.mem node_to_block (id x)
+      is_assigned x || Nodetbl.mem node_to_block (hash x)
     in
 
     (* Notifies a node that it has been used by one of its children.
      * If no more children have to use the node, assumes that the memory of the
      * node can be reused by another node. *)
     let update_parent p =
-      let id_p = id p in
-      if not (is_assigned p) && Hashtbl.mem refs id_p then (
-        let num = Hashtbl.find refs id_p in
-        assert (num > 0);
+      let hash_p = hash p in
+      if not (is_assigned p) && Nodetbl.mem refs hash_p then (
+        let num = Nodetbl.find refs hash_p in
         if num - 1 = 0 then (* can be reused *) (
-          Hashtbl.remove refs id_p;
-          let block_id = Hashtbl.find node_to_block id_p in
+          Nodetbl.remove refs hash_p;
+          let block_id = Nodetbl.find node_to_block hash_p in
           let block_size = Hashtbl.find block_to_size block_id in
           reusable := MultiMap.add block_size block_id !reusable
         )
-        else Hashtbl.replace refs id_p (num - 1)
+        else Nodetbl.replace refs hash_p (num - 1)
       )
     in
 
@@ -191,7 +190,7 @@ module Make
     let allocate_new x =
       let numel_x = node_numel x in
       let b_id = new_block_id () in
-      Hashtbl.add node_to_block (id x) b_id;
+      Nodetbl.add node_to_block (hash x) b_id;
       Hashtbl.add block_to_size b_id numel_x
     in
 
@@ -201,7 +200,7 @@ module Make
       let numel_x = node_numel x in
       let block_id_to_reuse = best_block_to_reuse numel_x in
       match block_id_to_reuse with
-      | Some b_id -> Hashtbl.add node_to_block (id x) b_id
+      | Some b_id -> Nodetbl.add node_to_block (hash x) b_id
       | None      -> allocate_new x
     in
 
@@ -210,13 +209,13 @@ module Make
       Owl_log.debug "init %s ..." (node_to_str x);
 
       if not (is_initialised x) then (
-        Hashtbl.add id_to_node (id x) x;
+        Nodetbl.add id_to_node (hash x) x;
         Array.iter init (parents x);
         let pre_par, post_par = split_parents x in
         Array.iter update_parent pre_par;
         (* do not bother sharing the memory of single elements *)
         if get_reuse x && not (is_node_elt x) then (
-          Hashtbl.add refs (id x) (refnum x);
+          Nodetbl.add refs (hash x) (refnum x);
           allocate x
         )
         else (
@@ -231,9 +230,9 @@ module Make
 
     (* create the blocks and initialise the relevant attributes of the nodes *)
     let id_to_block = Hashtbl.create 16 in
-    Hashtbl.iter
+    Nodetbl.iter
       (fun x_id b_id ->
-        let x = Hashtbl.find id_to_node x_id in
+        let x = Nodetbl.find id_to_node x_id in
         if Hashtbl.mem id_to_block b_id then (
           let block = Hashtbl.find id_to_block b_id in
           add_node_to_block x block

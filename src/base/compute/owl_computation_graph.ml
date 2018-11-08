@@ -63,14 +63,14 @@ module Make
     let b = Buffer.create 512 in
     Buffer.add_string b "digraph CG {\nnode [shape=record];\n";
     iter_in_edges (fun u v ->
-      Buffer.add_string b (Printf.sprintf "%i -> %i;\n" (id u) (id v))
+      Buffer.add_string b (Printf.sprintf "%i -> %i;\n" (hash_v u) (hash_v v))
     ) graph.output;
     iter_ancestors (fun n ->
       let svs = shape_or_value n in
       let b_id = get_block_id n in
       Buffer.add_string b
         (Printf.sprintf "%i [ label=\"{{#%i | { %s | %s }} | r:%i; %s; b:%i }\""
-           (id n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id);
+           (hash_v n) (id n) (name n) (op_to_str (attr n).op) (refnum n) svs b_id);
       if get_reuse n && b_id <> -1 then (
         let col = _block_colour b_id in
         Buffer.add_string b (Printf.sprintf "style=filled fillcolor=\"%s\"" col)

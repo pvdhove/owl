@@ -20,7 +20,7 @@ type dir = Ancestor | Descendant
 
 module NodeHash = struct
   type t = E : 'a node -> t
-  let equal = (==)
+  let equal (E x) (E y) = x == y
   let hash = function E x -> x.id
 end
 
@@ -64,6 +64,9 @@ let attr x = x.attr
 
 
 let set_attr x a = x.attr <- a
+
+
+let hash x = NodeHash.E x
 
 
 let node ?id ?(name="") ?(prev=[||]) ?(next=[||]) attr =
@@ -136,8 +139,8 @@ let replace_parent parent_0 parent_1 =
 let dfs_iter traversal f x next =
   let h = NodeHashtbl.create 512 in
   let rec _dfs_iter y =
-    if not (NodeHashtbl.mem h (E y)) then (
-      NodeHashtbl.add h (E y) None;
+    if not (NodeHashtbl.mem h (hash y)) then (
+      NodeHashtbl.add h (hash y) None;
       update y;
     )
   and relax y =
@@ -160,8 +163,8 @@ let bfs_iter traversal f x next =
   let q = Queue.create () in
   let relax y =
     Array.iter (fun z ->
-      if not (NodeHashtbl.mem h (E z)) then (
-        NodeHashtbl.add h (E z) None;
+      if not (NodeHashtbl.mem h (hash z)) then (
+        NodeHashtbl.add h (hash z) None;
         Queue.push z q
       )
     ) (next y)
@@ -169,7 +172,7 @@ let bfs_iter traversal f x next =
   let update y = f y; relax y in
 
   Array.iter (fun y -> Queue.push y q) x;
-  Array.iter (fun y -> NodeHashtbl.add h (E y) None) x;
+  Array.iter (fun y -> NodeHashtbl.add h (hash y) None) x;
   while not (Queue.is_empty q) do
     let y = Queue.pop q in
     update y
@@ -249,10 +252,10 @@ let _map _f _x = None
 (* TODO: optimise *)
 let copy ?(dir=Ancestor) x =
   let _make_if_not_exists h n =
-    if NodeHashtbl.mem h (E n) then n
+    if NodeHashtbl.mem h (hash n) then NodeHashtbl.find h (hash n)
     else (
       let n' = node ~id:n.id ~name:n.name ~prev:[||] ~next:[||] n.attr in
-      NodeHashtbl.add h (E n') None;
+      NodeHashtbl.add h (hash n) n';
       n'
     )
   in
@@ -266,7 +269,7 @@ let copy ?(dir=Ancestor) x =
     | Ancestor   -> iter_in_edges _copy x
     | Descendant -> iter_out_edges _copy x
   in
-  Array.map (fun n -> NodeHashtbl.find h n.id) x
+  Array.map (fun n -> NodeHashtbl.find h (hash n)) x
 
 
 (* TODO *)
